@@ -5,7 +5,8 @@
 ██  ██  ██    ██ ██   ██    ██    ██           ██    ██    
 ██   ██  ██████  ██████     ██    ███████ ███████    ██    
                                /kjuːb tɛst/ by Kubeshop
-                    EXCUTOR TEMPLATE
+
+                                       CYPRESS EXECUTOR
 ```
 
 <!-- try to enable it after snyk resolves https://github.com/snyk/snyk/issues/347
@@ -15,9 +16,9 @@ Known vulnerabilities: ![kubtest](https://snyk.io/test/github/kubeshop/kubtest/b
 ![helm-charts](https://snyk.io/test/github/kubeshop/helm-charts/badge.svg)
 -->
                                                            
-# Welcome to Kubtest Template Executor
+# Welcome to Kubtest Cypress Executor
 
-Kubetest Template Executor is test executor for [Kubtest](https://kubtest.io)
+Kubetest Cypress Executor is test executor for [Kubtest](https://kubtest.io)
 
 # Issues and enchancements 
 
@@ -33,4 +34,4 @@ Please follow to main kubtest repository for reporting any [issues](https://gith
 
 ## API 
 
-Template executor implements [Kubtest OpenAPI for executors](https://kubeshop.github.io/kubtest/openapi/#operations-tag-executor) (look at executor tag)
+Cypress executor implements [Kubtest OpenAPI for executors](https://kubeshop.github.io/kubtest/openapi/#operations-tag-executor) (look at executor tag)

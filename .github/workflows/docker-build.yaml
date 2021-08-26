@@ -32,11 +32,11 @@ jobs:
 
 
       -
-        name: Docker meta for Template executor
-        id: meta_template_executor
+        name: Docker meta for Cypress executor
+        id: meta_cypress_executor
         uses: docker/metadata-action@v3
         with:
-          images: kubeshop/kubtest-template-executor
+          images: kubeshop/kubtest-cypress-executor
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -45,12 +45,12 @@ jobs:
             type=sha
 
       - 
-        name: Build Template Executor
+        name: Build Cypress Executor
         uses: docker/bake-action@v1
         with:
           files: |
-            build/template-executor/docker-bake.hcl
-            ${{ steps.meta_template_executor.outputs.bake-file }}
+            build/cypress-executor/docker-bake.hcl
+            ${{ steps.meta_cypress_executor.outputs.bake-file }}
           targets: build
           set: build.args.TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }}
           push: true

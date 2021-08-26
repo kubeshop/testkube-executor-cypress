@@ -6,7 +6,7 @@ import (
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 )
 
-// CypressRunner for template - change me to some valid runner
+// CypressRunner for cypress - change me to some valid runner
 type CypressRunner struct {
 }
 
