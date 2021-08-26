@@ -23,7 +23,7 @@ func NewWorker(resultsRepository result.Repository) Worker {
 		BufferSize:  WorkerQueueBufferSize,
 		Repository:  resultsRepository,
 		// TODO implement runner for new executor
-		Runner: &runner.ExampleRunner{},
+		Runner: &runner.CypressRunner{},
 		Log:    log.DefaultLogger,
 	}
 }

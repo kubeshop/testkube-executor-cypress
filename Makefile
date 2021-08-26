@@ -1,6 +1,6 @@
 .PHONY: test cover 
 
-NAME ?= template
+NAME ?= cypress
 BIN_DIR ?= $(HOME)/bin
 GITHUB_TOKEN ?= "SET_ME"
 USER ?= $(USER)
