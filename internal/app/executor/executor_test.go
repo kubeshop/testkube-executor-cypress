@@ -33,8 +33,8 @@ func TestCypressExecutor_StartExecution(t *testing.T) {
 
 }
 
-func GetTestExecutor(t *testing.T) CypressExecutor {
-	cypressExecutor := NewCypressExecutor(&RepoMock{
+func GetTestExecutor(t *testing.T) Executor {
+	cypressExecutor := NewExecutor(&RepoMock{
 		Object: kubtest.Execution{Id: "1"},
 	})
 	cypressExecutor.Init()

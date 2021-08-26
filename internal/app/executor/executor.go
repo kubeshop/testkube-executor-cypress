@@ -19,12 +19,12 @@ import (
 // ConcurrentExecutions per node
 const ConcurrentExecutions = 4
 
-// NewCypressExecutor returns new CypressExecutor instance
-func NewCypressExecutor(resultRepository result.Repository) CypressExecutor {
+// NewExecutor returns new CypressExecutor instance
+func NewExecutor(resultRepository result.Repository) Executor {
 	var httpConfig server.Config
 	envconfig.Process("EXECUTOR", &httpConfig)
 
-	e := CypressExecutor{
+	e := Executor{
 		HTTPServer: server.NewServer(httpConfig),
 		Repository: resultRepository,
 		Worker:     worker.NewWorker(resultRepository),
@@ -33,19 +33,19 @@ func NewCypressExecutor(resultRepository result.Repository) CypressExecutor {
 	return e
 }
 
-type CypressExecutor struct {
+type Executor struct {
 	server.HTTPServer
 	Repository result.Repository
 	Worker     worker.Worker
 }
 
-func (p *CypressExecutor) Init() {
+func (p *Executor) Init() {
 	executions := p.Routes.Group("/executions")
 	executions.Post("/", p.StartExecution())
 	executions.Get("/:id", p.GetExecution())
 }
 
-func (p *CypressExecutor) StartExecution() fiber.Handler {
+func (p *Executor) StartExecution() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
 		var request kubtest.ExecutionRequest
@@ -67,7 +67,7 @@ func (p *CypressExecutor) StartExecution() fiber.Handler {
 	}
 }
 
-func (p CypressExecutor) GetExecution() fiber.Handler {
+func (p Executor) GetExecution() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		execution, err := p.Repository.Get(context.Background(), c.Params("id"))
 		if err != nil {
@@ -78,7 +78,7 @@ func (p CypressExecutor) GetExecution() fiber.Handler {
 	}
 }
 
-func (p CypressExecutor) Run() error {
+func (p Executor) Run() error {
 	executionsQueue := p.Worker.PullExecutions()
 	p.Worker.Run(executionsQueue)
 
