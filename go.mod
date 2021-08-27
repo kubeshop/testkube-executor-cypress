@@ -2,8 +2,6 @@ module github.com/kubeshop/kubtest-executor-cypress
 
 go 1.16
 
-replace github.com/kubeshop/kubtest v0.0.0-20210823141506-ac90beb1ff74 => ../kubtest
-
 require (
 	github.com/gofiber/adaptor/v2 v2.1.7
 	github.com/gofiber/fiber/v2 v2.14.0
