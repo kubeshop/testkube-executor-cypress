@@ -10,7 +10,8 @@ func TestCheckOut(t *testing.T) {
 
 	repo := "https://github.com/cirosantilli/test-git-partial-clone-big-small"
 
-	err := PartialCheckout(repo, "small")
+	dir, err := PartialCheckout(repo, "small")
+	t.Logf("partial repo checkedout to dir: %s", dir)
 	assert.NoError(t, err)
 	t.Fail()
 }
