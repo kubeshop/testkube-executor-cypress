@@ -1,4 +1,4 @@
-module github.com/kubeshop/kubtest-executor-template
+module github.com/kubeshop/kubtest-executor-cypress
 
 go 1.16
 

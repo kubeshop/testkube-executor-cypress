@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTemplateExecutor_StartExecution(t *testing.T) {
+func TestCypressExecutor_StartExecution(t *testing.T) {
 
 	t.Run("runs newman runner command", func(t *testing.T) {
 		// given
@@ -19,7 +19,7 @@ func TestTemplateExecutor_StartExecution(t *testing.T) {
 		req := httptest.NewRequest(
 			"POST",
 			"/v1/executions/",
-			strings.NewReader(`{"type": "template/collection", "metadata": "{\"info\":{\"name\":\"kubtestExampleCollection\"}}"}`),
+			strings.NewReader(`{"type": "cypress/collection", "metadata": "{\"info\":{\"name\":\"kubtestExampleCollection\"}}"}`),
 		)
 
 		// when
@@ -33,13 +33,13 @@ func TestTemplateExecutor_StartExecution(t *testing.T) {
 
 }
 
-func GetTestExecutor(t *testing.T) TemplateExecutor {
-	templateExecutor := NewTemplateExecutor(&RepoMock{
+func GetTestExecutor(t *testing.T) Executor {
+	cypressExecutor := NewExecutor(&RepoMock{
 		Object: kubtest.Execution{Id: "1"},
 	})
-	templateExecutor.Init()
+	cypressExecutor.Init()
 
-	return templateExecutor
+	return cypressExecutor
 }
 
 // r RepoMock

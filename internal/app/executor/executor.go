@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/repository/result"
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/worker"
+	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/repository/result"
+	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/worker"
 
 	// TODO move server to kubtest/pkg
-	"github.com/kubeshop/kubtest-executor-template/internal/pkg/server"
+	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/server"
 
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 )
@@ -19,12 +19,12 @@ import (
 // ConcurrentExecutions per node
 const ConcurrentExecutions = 4
 
-// NewTemplateExecutor returns new TemplateExecutor instance
-func NewTemplateExecutor(resultRepository result.Repository) TemplateExecutor {
+// NewExecutor returns new CypressExecutor instance
+func NewExecutor(resultRepository result.Repository) Executor {
 	var httpConfig server.Config
 	envconfig.Process("EXECUTOR", &httpConfig)
 
-	e := TemplateExecutor{
+	e := Executor{
 		HTTPServer: server.NewServer(httpConfig),
 		Repository: resultRepository,
 		Worker:     worker.NewWorker(resultRepository),
@@ -33,19 +33,19 @@ func NewTemplateExecutor(resultRepository result.Repository) TemplateExecutor {
 	return e
 }
 
-type TemplateExecutor struct {
+type Executor struct {
 	server.HTTPServer
 	Repository result.Repository
 	Worker     worker.Worker
 }
 
-func (p *TemplateExecutor) Init() {
+func (p *Executor) Init() {
 	executions := p.Routes.Group("/executions")
 	executions.Post("/", p.StartExecution())
 	executions.Get("/:id", p.GetExecution())
 }
 
-func (p *TemplateExecutor) StartExecution() fiber.Handler {
+func (p *Executor) StartExecution() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
 		var request kubtest.ExecutionRequest
@@ -67,7 +67,7 @@ func (p *TemplateExecutor) StartExecution() fiber.Handler {
 	}
 }
 
-func (p TemplateExecutor) GetExecution() fiber.Handler {
+func (p Executor) GetExecution() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		execution, err := p.Repository.Get(context.Background(), c.Params("id"))
 		if err != nil {
@@ -78,7 +78,7 @@ func (p TemplateExecutor) GetExecution() fiber.Handler {
 	}
 }
 
-func (p TemplateExecutor) Run() error {
+func (p Executor) Run() error {
 	executionsQueue := p.Worker.PullExecutions()
 	p.Worker.Run(executionsQueue)
 
