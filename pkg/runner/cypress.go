@@ -1,18 +1,53 @@
 package runner
 
 import (
+	"fmt"
 	"io"
+	"io/ioutil"
 
+	"github.com/kubeshop/kubtest-executor-cypress/pkg/git"
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	"github.com/kubeshop/kubtest/pkg/process"
 )
 
 // CypressRunner for cypress - change me to some valid runner
 type CypressRunner struct {
 }
 
-func (r *CypressRunner) Run(input io.Reader, params map[string]string) kubtest.ExecutionResult {
+func (r *CypressRunner) Run(input io.Reader, params map[string]string) (result kubtest.ExecutionResult) {
+
+	repoBytes, err := ioutil.ReadAll(input)
+	if err != nil {
+		return result.Err(err)
+	}
+	repo := string(repoBytes)
+
+	dir, ok := params["dir"]
+	if !ok {
+		return result.Err(fmt.Errorf("can't find directory ('dir') in params"))
+	}
+
+	branch, ok := params["branch"]
+	if !ok {
+		return result.Err(fmt.Errorf("can't find directory ('dir') in params"))
+	}
+
+	// checkout repo
+	outputDir, err := git.PartialCheckout(repo, dir, branch)
+	if err != nil {
+		return result.Err(err)
+	}
+
+	// run cypress inside repo directory
+	out, err := process.ExecuteInDir(outputDir, "cypress", "run", ".")
+	if err != nil {
+		return result.Err(err)
+	}
+
+	// map output to Execution result
+	// TODO move to mapper
 	return kubtest.ExecutionResult{
 		Status:    kubtest.ExecutionStatusSuceess,
-		RawOutput: "exmaple test output",
+		RawOutput: string(out),
 	}
 }
