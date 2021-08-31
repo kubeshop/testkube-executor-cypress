@@ -54,7 +54,19 @@ func (p *Executor) StartExecution() fiber.Handler {
 			return p.Error(c, http.StatusBadRequest, err)
 		}
 
-		execution := kubtest.NewExecution(string(request.Metadata), request.Params)
+		execution := kubtest.NewExecution()
+
+		execution.WithContent(request.Content).
+			WithParams(request.Params)
+
+		if request.Repository != nil {
+			execution.WithRepositoryData(
+				request.Repository.Uri,
+				request.Repository.Branch,
+				request.Repository.Directory,
+			)
+		}
+
 		err = p.Repository.Insert(context.Background(), execution)
 		if err != nil {
 			return p.Error(c, http.StatusInternalServerError, err)

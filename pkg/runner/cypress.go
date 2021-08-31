@@ -5,8 +5,8 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/kubeshop/kubtest-executor-cypress/pkg/git"
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	"github.com/kubeshop/kubtest/pkg/git"
 	"github.com/kubeshop/kubtest/pkg/process"
 )
 
@@ -15,7 +15,6 @@ type CypressRunner struct {
 }
 
 func (r *CypressRunner) Run(input io.Reader, params map[string]string) (result kubtest.ExecutionResult) {
-
 	repoBytes, err := ioutil.ReadAll(input)
 	if err != nil {
 		return result.Err(err)
@@ -38,8 +37,14 @@ func (r *CypressRunner) Run(input io.Reader, params map[string]string) (result k
 		return result.Err(err)
 	}
 
+	// be gentle to different cypress versions, run from local npm deps
+	_, err = process.ExecuteInDir(outputDir, "npm", "install")
+	if err != nil {
+		return result.Err(err)
+	}
+
 	// run cypress inside repo directory
-	out, err := process.ExecuteInDir(outputDir, "cypress", "run", ".")
+	out, err := process.ExecuteInDir(outputDir, "./node_modules/cypress/bin/cypress", "run")
 	if err != nil {
 		return result.Err(err)
 	}
