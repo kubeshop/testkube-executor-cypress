@@ -2,37 +2,30 @@ package runner
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 	"github.com/kubeshop/kubtest/pkg/git"
 	"github.com/kubeshop/kubtest/pkg/process"
 )
 
-// CypressRunner for cypress - change me to some valid runner
+// CypressRunner for cypress - change me to some valid runner implements kubtest/pkg/runner.Runner interface
 type CypressRunner struct {
 }
 
-func (r *CypressRunner) Run(input io.Reader, params map[string]string) (result kubtest.ExecutionResult) {
-	repoBytes, err := ioutil.ReadAll(input)
-	if err != nil {
-		return result.Err(err)
-	}
-	repo := string(repoBytes)
+func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.ExecutionResult) {
 
-	dir, ok := params["dir"]
-	if !ok {
-		return result.Err(fmt.Errorf("can't find directory ('dir') in params"))
+	repo := execution.Repository
+
+	if repo.Path == "" {
+		return result.Err(fmt.Errorf("can't find repository path in params"))
 	}
 
-	branch, ok := params["branch"]
-	if !ok {
-		return result.Err(fmt.Errorf("can't find directory ('dir') in params"))
+	if repo.Branch == "" {
+		return result.Err(fmt.Errorf("can't find branch in params"))
 	}
 
 	// checkout repo
-	outputDir, err := git.PartialCheckout(repo, dir, branch)
+	outputDir, err := git.PartialCheckout(repo.Uri, repo.Path, repo.Branch)
 	if err != nil {
 		return result.Err(err)
 	}

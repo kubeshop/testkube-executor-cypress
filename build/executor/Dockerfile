@@ -11,5 +11,5 @@ RUN cd cmd/executor;go build -o /app -mod mod -a .
 FROM cypress/included:8.3.0
 WORKDIR /root/
 COPY --from=0 /app /bin/app
-EXPOSE 8083
+EXPOSE 8084
 ENTRYPOINT ["/bin/app"]

@@ -1,10 +1,11 @@
 package runner
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 )
 
 func TestRun(t *testing.T) {
@@ -14,10 +15,12 @@ func TestRun(t *testing.T) {
 
 	runner := CypressRunner{}
 	repoURI := "https://github.com/kubeshop/kubtest-executor-cypress.git"
-	repoInput := bytes.NewReader([]byte(repoURI))
-	result := runner.Run(repoInput, map[string]string{
-		"dir":    "examples",
-		"branch": "jacek/feature/git-checkout",
+	result := runner.Run(kubtest.Execution{
+		Repository: &kubtest.Repository{
+			Uri:    repoURI,
+			Branch: "jacek/feature/git-checkout",
+			Path:   "examples",
+		},
 	})
 
 	fmt.Printf("%+v\n", result)

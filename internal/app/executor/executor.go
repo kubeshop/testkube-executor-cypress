@@ -8,7 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/repository/result"
-	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/worker"
+	"github.com/kubeshop/kubtest-executor-cypress/pkg/runner"
+	"github.com/kubeshop/kubtest/pkg/worker"
 
 	// TODO move server to kubtest/pkg
 	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/server"
@@ -27,7 +28,7 @@ func NewExecutor(resultRepository result.Repository) Executor {
 	e := Executor{
 		HTTPServer: server.NewServer(httpConfig),
 		Repository: resultRepository,
-		Worker:     worker.NewWorker(resultRepository),
+		Worker:     worker.NewWorker(resultRepository, runner.CypressRunner{}),
 	}
 
 	return e
