@@ -2,8 +2,8 @@ package executor
 
 import (
 	"github.com/kelseyhightower/envconfig"
-	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/repository/result"
 	"github.com/kubeshop/kubtest-executor-cypress/pkg/runner"
+	"github.com/kubeshop/kubtest/pkg/executor/repository/result"
 	"github.com/kubeshop/kubtest/pkg/worker"
 
 	"github.com/kubeshop/kubtest/pkg/server"
@@ -35,22 +35,24 @@ type Executor struct {
 }
 
 // Init initialize ExecutorAPI server
-func (p *Executor) Init() {
+func (e *Executor) Init() *Executor {
 
-	executions := p.Routes.Group("/executions")
+	executions := e.Routes.Group("/executions")
 
 	// add standard start/get handlers from kubtest executor server library
 	// they will push and get from worker queue storage
-	executions.Post("/", executorServer.StartExecution(p.HTTPServer, p.Repository))
-	executions.Get("/:id", executorServer.GetExecution(p.HTTPServer, p.Repository))
+	executions.Post("/", executorServer.StartExecution(e.HTTPServer, e.Repository))
+	executions.Get("/:id", executorServer.GetExecution(e.HTTPServer, e.Repository))
+
+	return e
 }
 
-func (p Executor) Run() error {
+func (e Executor) Run() error {
 	// get executions channel
-	executionsQueue := p.Worker.PullExecutions()
+	executionsQueue := e.Worker.PullExecutions()
 	// pass channel to worker
-	p.Worker.Run(executionsQueue)
+	e.Worker.Run(executionsQueue)
 
 	// run server (blocks process/returns error)
-	return p.HTTPServer.Run()
+	return e.HTTPServer.Run()
 }

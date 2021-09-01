@@ -17,11 +17,11 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 	repo := execution.Repository
 
 	if repo.Path == "" {
-		return result.Err(fmt.Errorf("can't find repository path in params"))
+		return result.Err(fmt.Errorf("can't find repository path in params, repo:%+v", repo))
 	}
 
 	if repo.Branch == "" {
-		return result.Err(fmt.Errorf("can't find branch in params"))
+		return result.Err(fmt.Errorf("can't find branch in params, repo:%+v", repo))
 	}
 
 	// checkout repo
