@@ -2,9 +2,10 @@ package main
 
 import (
 	"github.com/kelseyhightower/envconfig"
-	"github.com/kubeshop/kubtest-executor-cypress/internal/app/executor"
+	"github.com/kubeshop/kubtest-executor-cypress/pkg/runner"
 	"github.com/kubeshop/kubtest/pkg/executor/repository/result"
 	"github.com/kubeshop/kubtest/pkg/executor/repository/storage"
+	"github.com/kubeshop/kubtest/pkg/executor/server"
 	"github.com/kubeshop/kubtest/pkg/ui"
 )
 
@@ -29,6 +30,8 @@ func main() {
 	}
 
 	repo := result.NewMongoRespository(db, cfg.Collection)
-	exec := executor.NewExecutor(repo)
+	runner := runner.NewCypressRunner()
+	exec := server.NewExecutor(repo, runner)
+
 	ui.ExitOnError("Running executor", exec.Init().Run())
 }

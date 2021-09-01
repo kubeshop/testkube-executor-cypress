@@ -8,6 +8,10 @@ import (
 	"github.com/kubeshop/kubtest/pkg/process"
 )
 
+func NewCypressRunner() *CypressRunner {
+	return &CypressRunner{}
+}
+
 // CypressRunner - implements runner interface used in worker to start test execution
 type CypressRunner struct {
 }
