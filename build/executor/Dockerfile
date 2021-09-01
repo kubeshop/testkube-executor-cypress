@@ -9,6 +9,8 @@ RUN cd cmd/executor;go build -o /app -mod mod -a .
 
 
 FROM cypress/included:8.3.0
+# git for checking out partial git repositories
+RUN apt-get update && apt-get install git
 WORKDIR /root/
 COPY --from=0 /app /bin/app
 EXPOSE 8084
