@@ -1,20 +1,14 @@
 package executor
 
 import (
-	"context"
-	"encoding/json"
-	"net/http"
-
-	"github.com/gofiber/fiber/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/repository/result"
 	"github.com/kubeshop/kubtest-executor-cypress/pkg/runner"
 	"github.com/kubeshop/kubtest/pkg/worker"
 
-	// TODO move server to kubtest/pkg
-	"github.com/kubeshop/kubtest-executor-cypress/internal/pkg/server"
+	"github.com/kubeshop/kubtest/pkg/server"
 
-	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	executorServer "github.com/kubeshop/kubtest/pkg/executor/server"
 )
 
 // ConcurrentExecutions per node
@@ -28,7 +22,7 @@ func NewExecutor(resultRepository result.Repository) Executor {
 	e := Executor{
 		HTTPServer: server.NewServer(httpConfig),
 		Repository: resultRepository,
-		Worker:     worker.NewWorker(resultRepository, runner.CypressRunner{}),
+		Worker:     worker.NewWorker(resultRepository, &runner.CypressRunner{}),
 	}
 
 	return e
@@ -40,60 +34,23 @@ type Executor struct {
 	Worker     worker.Worker
 }
 
+// Init initialize ExecutorAPI server
 func (p *Executor) Init() {
+
 	executions := p.Routes.Group("/executions")
-	executions.Post("/", p.StartExecution())
-	executions.Get("/:id", p.GetExecution())
-}
 
-func (p *Executor) StartExecution() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-
-		var request kubtest.ExecutionRequest
-		err := json.Unmarshal(c.Body(), &request)
-		if err != nil {
-			return p.Error(c, http.StatusBadRequest, err)
-		}
-
-		execution := kubtest.NewExecution()
-
-		execution.WithContent(request.Content).
-			WithParams(request.Params)
-
-		if request.Repository != nil {
-			execution.WithRepositoryData(
-				request.Repository.Uri,
-				request.Repository.Branch,
-				request.Repository.Directory,
-			)
-		}
-
-		err = p.Repository.Insert(context.Background(), execution)
-		if err != nil {
-			return p.Error(c, http.StatusInternalServerError, err)
-
-		}
-
-		p.Log.Infow("starting new execution", "execution", execution)
-		c.Response().Header.SetStatusCode(201)
-		return c.JSON(execution)
-	}
-}
-
-func (p Executor) GetExecution() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		execution, err := p.Repository.Get(context.Background(), c.Params("id"))
-		if err != nil {
-			return p.Error(c, http.StatusInternalServerError, err)
-		}
-
-		return c.JSON(execution)
-	}
+	// add standard start/get handlers from kubtest executor server library
+	// they will push and get from worker queue storage
+	executions.Post("/", executorServer.StartExecution(p.HTTPServer, p.Repository))
+	executions.Get("/:id", executorServer.GetExecution(p.HTTPServer, p.Repository))
 }
 
 func (p Executor) Run() error {
+	// get executions channel
 	executionsQueue := p.Worker.PullExecutions()
+	// pass channel to worker
 	p.Worker.Run(executionsQueue)
 
+	// run server (blocks process/returns error)
 	return p.HTTPServer.Run()
 }
