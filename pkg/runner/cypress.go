@@ -8,13 +8,13 @@ import (
 	"github.com/kubeshop/kubtest/pkg/process"
 )
 
-// CypressRunner for cypress - change me to some valid runner implements kubtest/pkg/runner.Runner interface
+// CypressRunner - implements runner interface used in worker to start test execution
 type CypressRunner struct {
 }
 
 func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.ExecutionResult) {
 
-	// make come validation
+	// make some validation
 	err := r.Validate(execution)
 	if err != nil {
 		return result.Err(err)
@@ -40,15 +40,19 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 		return result.Err(err)
 	}
 
-	// map output to Execution result
 	// TODO move to mapper
+	// TODO add result mapping to ExecutionResult
+	// map output to Execution result
 	return kubtest.ExecutionResult{
 		Status:    kubtest.ExecutionStatusSuceess,
 		RawOutput: string(out),
 	}
 }
 
+// Validate checks if Execution has valid data in context of Cypress executor
+// Cypress executor runs currently only based on cypress project
 func (r *CypressRunner) Validate(execution kubtest.Execution) error {
+
 	if execution.Repository == nil {
 		return fmt.Errorf("cypress executor handle only repository based tests, but repository is nil")
 	}
