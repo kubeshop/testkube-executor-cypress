@@ -1,3 +1,0 @@
-func Checkout(repo string) {
-
-}
