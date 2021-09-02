@@ -12,7 +12,7 @@ func TestRun(t *testing.T) {
 	t.Skip("move this test to e2e test suite with valid environment setup")
 
 	// Can't run it in my default install on mac
-	os.Setenv("CYPRESS_CACHE_FOLDER", "/Users/exu/tmp")
+	os.Setenv("CYPRESS_CACHE_FOLDER", os.TempDir())
 
 	runner := CypressRunner{}
 	repoURI := "https://github.com/kubeshop/kubtest-executor-cypress.git"
