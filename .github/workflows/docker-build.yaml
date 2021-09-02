@@ -49,7 +49,7 @@ jobs:
         uses: docker/bake-action@v1
         with:
           files: |
-            build/cypress-executor/docker-bake.hcl
+            build/executor/docker-bake.hcl
             ${{ steps.meta_cypress_executor.outputs.bake-file }}
           targets: build
           set: build.args.TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }}
