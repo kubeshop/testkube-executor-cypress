@@ -38,10 +38,10 @@ cover:
 version-bump: version-bump-patch
 
 version-bump-patch:
-	go run scripts/bump.go -kind patch
+	go run cmd/tools/main.go bump -k patch
 
 version-bump-minor:
-	go run scripts/bump.go -kind minor
+	go run cmd/tools/main.go bump -k minor
 
 version-bump-major:
-	go run scripts/bump.go -kind major
+	go run cmd/tools/main.go bump -k major
