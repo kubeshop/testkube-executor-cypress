@@ -45,3 +45,6 @@ version-bump-minor:
 
 version-bump-major:
 	go run cmd/tools/main.go bump -k major
+
+version-bump-dev:
+	go run cmd/tools/main.go bump --dev
