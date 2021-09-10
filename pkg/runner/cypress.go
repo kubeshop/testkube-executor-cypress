@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/kubeshop/kubtest/pkg/api/kubtest"
 	"github.com/kubeshop/kubtest/pkg/git"
@@ -33,13 +34,13 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 	}
 
 	// be gentle to different cypress versions, run from local npm deps
-	_, err = process.ExecuteInDir(outputDir, "npm", "install")
+	_, err = process.LoggedExecuteInDir(outputDir, os.Stdout, "npm", "install")
 	if err != nil {
 		return result.Err(err)
 	}
 
 	// run cypress inside repo directory
-	out, err := process.ExecuteInDir(outputDir, "./node_modules/cypress/bin/cypress", "run")
+	out, err := process.LoggedExecuteInDir(outputDir, os.Stdout, "./node_modules/cypress/bin/cypress", "run")
 	if err != nil {
 		return result.Err(err)
 	}
