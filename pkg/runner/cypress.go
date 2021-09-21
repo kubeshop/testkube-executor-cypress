@@ -27,6 +27,7 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 
 	repo := execution.Repository
 
+	
 	// checkout repo
 	outputDir, err := git.PartialCheckout(repo.Uri, repo.Path, repo.Branch)
 	if err != nil {
