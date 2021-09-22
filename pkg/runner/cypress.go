@@ -50,8 +50,9 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 	// TODO add result mapping to ExecutionResult
 	// map output to Execution result
 	return kubtest.ExecutionResult{
-		Status:    kubtest.ExecutionStatusSuceess,
-		RawOutput: string(out),
+		Status:     kubtest.ExecutionStatusSuceess,
+		Output:     string(out),
+		OutputType: "text/plain",
 	}
 }
 
