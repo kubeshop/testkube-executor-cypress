@@ -39,17 +39,23 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 		return result.Err(err)
 	}
 
+	args := []string{"run"}
+	for k, v := range execution.Params {
+		args = append(args, "--env", fmt.Sprintf("%s=%s", k, v))
+	}
+
 	// run cypress inside repo directory
-	out, err := process.LoggedExecuteInDir(outputDir, os.Stdout, "./node_modules/cypress/bin/cypress", "run")
+	out, err := process.LoggedExecuteInDir(outputDir, os.Stdout, "./node_modules/cypress/bin/cypress", args...)
 	if err != nil {
 		return result.Err(err)
 	}
 
 	// TODO move to mapper
 	// TODO add result mapping to ExecutionResult
+	status := kubtest.SUCCESS_ExecutionStatus
 	// map output to Execution result
 	return kubtest.ExecutionResult{
-		Status:     kubtest.ResultSuceess,
+		Status:     &status,
 		Output:     string(out),
 		OutputType: "text/plain",
 	}
