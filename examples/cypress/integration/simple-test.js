@@ -3,6 +3,7 @@ describe('The Home Page', () => {
     cy.visit('https://kubtest.io') 
 
     expect(Cypress.env('testparam')).to.equal('testvalue')
+
     cy.contains('Efficient testing of k8s applications')
   })
 })
