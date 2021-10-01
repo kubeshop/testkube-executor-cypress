@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	junit "github.com/joshdk/go-junit"
 	"github.com/kubeshop/kubtest/pkg/api/v1/kubtest"
 	"github.com/kubeshop/kubtest/pkg/git"
 	"github.com/kubeshop/kubtest/pkg/process"
@@ -39,7 +40,7 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 		return result.Err(err)
 	}
 
-	args := []string{"run"}
+	args := []string{"run", "--reporter", "junit", "--reporter-options", "mochaFile=results/junit.xml,toConsole=true"}
 	for k, v := range execution.Params {
 		args = append(args, "--env", fmt.Sprintf("%s=%s", k, v))
 	}
@@ -49,6 +50,12 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 	if err != nil {
 		return result.Err(err)
 	}
+
+	suites, err := junit.IngestFile("results/junit.xml")
+	if err != nil {
+		return result.Err(err)
+	}
+	fmt.Printf("%+v\n", suites)
 
 	// TODO move to mapper
 	// TODO add result mapping to ExecutionResult
