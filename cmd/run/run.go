@@ -1,20 +1,14 @@
-package runner
+package main
 
 import (
 	"fmt"
-	"os"
-	"testing"
 
+	"github.com/kubeshop/kubtest-executor-cypress/pkg/runner"
 	"github.com/kubeshop/kubtest/pkg/api/v1/kubtest"
 )
 
-func TestRun(t *testing.T) {
-	t.Skip("move this test to e2e test suite with valid environment setup")
-
-	// Can't run it in my default install on mac
-	os.Setenv("CYPRESS_CACHE_FOLDER", os.TempDir())
-
-	runner := CypressRunner{}
+func main() {
+	runner := runner.NewCypressRunner()
 	repoURI := "https://github.com/kubeshop/kubtest-executor-cypress.git"
 	result := runner.Run(kubtest.Execution{
 		Params: map[string]string{"testparam": "testvalue"},
@@ -26,7 +20,5 @@ func TestRun(t *testing.T) {
 	})
 
 	fmt.Printf("%+v\n", result)
-
-	t.Fail()
 
 }
