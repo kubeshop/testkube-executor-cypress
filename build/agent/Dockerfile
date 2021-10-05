@@ -16,4 +16,4 @@ RUN apt-get install -y libgtk2.0-0 \
 RUN npm install cypress -g
 WORKDIR /
 ADD . /
-RUN go build -o /usr/local/bin/agent agents/cypress-agent/main.go 
+RUN go build -o /usr/local/bin/agent cmd/agent/main.go 
