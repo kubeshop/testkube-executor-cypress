@@ -1,5 +1,6 @@
 .PHONY: test cover 
 
+CHART_NAME=cypress-executor
 NAME ?= cypress
 BIN_DIR ?= $(HOME)/bin
 GITHUB_TOKEN ?= "SET_ME"
@@ -51,3 +52,10 @@ version-bump-major:
 
 version-bump-dev:
 	go run cmd/tools/main.go bump --dev
+
+prerelease: 
+	go run cmd/tools/main.go release -d -a $(CHART_NAME)
+
+release: 
+	go run cmd/tools/main.go release -a $(CHART_NAME)
+

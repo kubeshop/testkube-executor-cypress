@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	"github.com/kubeshop/kubtest/pkg/api/v1/kubtest"
 )
 
 func TestRun(t *testing.T) {
@@ -17,9 +17,10 @@ func TestRun(t *testing.T) {
 	runner := CypressRunner{}
 	repoURI := "https://github.com/kubeshop/kubtest-executor-cypress.git"
 	result := runner.Run(kubtest.Execution{
+		Params: map[string]string{"testparam": "testvalue"},
 		Repository: &kubtest.Repository{
 			Uri:    repoURI,
-			Branch: "jacek/feature/git-checkout",
+			Branch: "jacek/feature/json-output",
 			Path:   "examples",
 		},
 	})

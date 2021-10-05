@@ -3,8 +3,10 @@ package runner
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
-	"github.com/kubeshop/kubtest/pkg/api/kubtest"
+	junit "github.com/joshdk/go-junit"
+	"github.com/kubeshop/kubtest/pkg/api/v1/kubtest"
 	"github.com/kubeshop/kubtest/pkg/git"
 	"github.com/kubeshop/kubtest/pkg/process"
 )
@@ -27,7 +29,6 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 
 	repo := execution.Repository
 
-	
 	// checkout repo
 	outputDir, err := git.PartialCheckout(repo.Uri, repo.Path, repo.Branch)
 	if err != nil {
@@ -40,19 +41,24 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 		return result.Err(err)
 	}
 
+	junitReportPath := filepath.Join(outputDir, "results/junit.xml")
+	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath)}
+	for k, v := range execution.Params {
+		args = append(args, "--env", fmt.Sprintf("%s=%s", k, v))
+	}
+
 	// run cypress inside repo directory
-	out, err := process.LoggedExecuteInDir(outputDir, os.Stdout, "./node_modules/cypress/bin/cypress", "run")
+	out, err := process.LoggedExecuteInDir(outputDir, os.Stdout, "./node_modules/cypress/bin/cypress", args...)
 	if err != nil {
 		return result.Err(err)
 	}
 
-	// TODO move to mapper
-	// TODO add result mapping to ExecutionResult
-	// map output to Execution result
-	return kubtest.ExecutionResult{
-		Status:    kubtest.ExecutionStatusSuceess,
-		RawOutput: string(out),
+	suites, err := junit.IngestFile(junitReportPath)
+	if err != nil {
+		return result.Err(err)
 	}
+
+	return MapJunitToExecutionResults(out, suites)
 }
 
 // Validate checks if Execution has valid data in context of Cypress executor
@@ -72,4 +78,29 @@ func (r *CypressRunner) Validate(execution kubtest.Execution) error {
 	}
 
 	return nil
+}
+
+func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result kubtest.ExecutionResult) {
+	status := kubtest.SUCCESS_ExecutionStatus
+	result.Status = &status
+	result.Output = string(out)
+	result.OutputType = "text/plain"
+
+	for _, suite := range suites {
+		for _, test := range suite.Tests {
+
+			result.Steps = append(
+				result.Steps,
+				kubtest.ExecutionStepResult{
+					Name:     fmt.Sprintf("%s - %s", suite.Name, test.Name),
+					Duration: test.Duration.String(),
+					Status:   string(test.Status),
+				})
+		}
+
+		// TODO parse sub suites recursively
+
+	}
+
+	return result
 }
