@@ -23,7 +23,7 @@ docker-build-executor:
 	docker build -t $(NAME)-executor -f build/executor/Dockerfile .
 
 docker-build-runner: 
-	docker build -t kubtest/$(NAME)-runner -f build/agent/Dockerfile .
+	docker build -t kubeshop/$(NAME)-runner -f build/agent/Dockerfile .
 
 install-swagger-codegen-mac: 
 	brew install swagger-codegen
