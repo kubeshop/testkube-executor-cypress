@@ -94,7 +94,7 @@ func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result kubtes
 				kubtest.ExecutionStepResult{
 					Name:     fmt.Sprintf("%s - %s", suite.Name, test.Name),
 					Duration: test.Duration.String(),
-					Status:   string(test.Status),
+					Status:   MapStatus(test.Status),
 				})
 		}
 
@@ -103,4 +103,13 @@ func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result kubtes
 	}
 
 	return result
+}
+
+func MapStatus(in junit.Status) (out string) {
+	switch string(in) {
+	case "passed":
+		return string(kubtest.SUCCESS_ExecutionStatus)
+	default:
+		return string(kubtest.ERROR__ExecutionStatus)
+	}
 }
