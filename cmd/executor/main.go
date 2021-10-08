@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/kelseyhightower/envconfig"
-	"github.com/kubeshop/kubtest-executor-cypress/pkg/runner"
-	"github.com/kubeshop/kubtest/pkg/executor/repository/result"
-	"github.com/kubeshop/kubtest/pkg/executor/repository/storage"
-	"github.com/kubeshop/kubtest/pkg/executor/server"
-	"github.com/kubeshop/kubtest/pkg/ui"
+	"github.com/kubeshop/testkube-executor-cypress/pkg/runner"
+	"github.com/kubeshop/testkube/pkg/executor/repository/result"
+	"github.com/kubeshop/testkube/pkg/executor/repository/storage"
+	"github.com/kubeshop/testkube/pkg/executor/server"
+	"github.com/kubeshop/testkube/pkg/ui"
 )
 
 const DatabaseName = "cypress-executor"

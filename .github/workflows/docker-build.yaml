@@ -36,7 +36,7 @@ jobs:
         id: meta_cypress_executor
         uses: docker/metadata-action@v3
         with:
-          images: kubeshop/kubtest-cypress-executor
+          images: kubeshop/testkube-cypress-executor
           tags: |
             type=ref,event=branch
             type=ref,event=pr
