@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kubeshop/kubtest-executor-cypress/pkg/runner"
-	"github.com/kubeshop/kubtest/pkg/api/v1/kubtest"
+	"github.com/kubeshop/testkube-executor-cypress/pkg/runner"
+	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 
 	script := args[1]
 
-	e := kubtest.Execution{}
+	e := testkube.Execution{}
 	json.Unmarshal([]byte(script), &e)
 	runner := runner.NewCypressRunner()
 	result := runner.Run(e)

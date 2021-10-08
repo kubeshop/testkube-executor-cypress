@@ -1,6 +1,6 @@
 describe('The Home Page', () => {
   it('successfully loads', () => {
-    cy.visit('https://kubtest.io') 
+    cy.visit('https://testkube.io') 
 
     expect(Cypress.env('testparam')).to.equal('testvalue')
 

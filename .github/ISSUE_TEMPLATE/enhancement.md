@@ -1,6 +1,6 @@
 ---
 name: Enhancement
-about: Suggest an enhancement to existing Kubtest functionality
+about: Suggest an enhancement to existing testkube functionality
 title: ''
 labels: 'enhancement 🚀'
 assignees: ''

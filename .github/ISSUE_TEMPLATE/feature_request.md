@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea or new feature for Kubtest
+about: Suggest an idea or new feature for testkube
 title: ''
 labels: 'feature-request 🚀'
 assignees: ''

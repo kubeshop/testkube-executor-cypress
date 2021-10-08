@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	junit "github.com/joshdk/go-junit"
-	"github.com/kubeshop/kubtest/pkg/api/v1/kubtest"
-	"github.com/kubeshop/kubtest/pkg/git"
-	"github.com/kubeshop/kubtest/pkg/process"
+	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
+	"github.com/kubeshop/testkube/pkg/git"
+	"github.com/kubeshop/testkube/pkg/process"
 )
 
 func NewCypressRunner() *CypressRunner {
@@ -19,7 +19,7 @@ func NewCypressRunner() *CypressRunner {
 type CypressRunner struct {
 }
 
-func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.ExecutionResult) {
+func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult) {
 
 	// make some validation
 	err := r.Validate(execution)
@@ -63,7 +63,7 @@ func (r *CypressRunner) Run(execution kubtest.Execution) (result kubtest.Executi
 
 // Validate checks if Execution has valid data in context of Cypress executor
 // Cypress executor runs currently only based on cypress project
-func (r *CypressRunner) Validate(execution kubtest.Execution) error {
+func (r *CypressRunner) Validate(execution testkube.Execution) error {
 
 	if execution.Repository == nil {
 		return fmt.Errorf("cypress executor handle only repository based tests, but repository is nil")
@@ -80,8 +80,8 @@ func (r *CypressRunner) Validate(execution kubtest.Execution) error {
 	return nil
 }
 
-func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result kubtest.ExecutionResult) {
-	status := kubtest.SUCCESS_ExecutionStatus
+func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result testkube.ExecutionResult) {
+	status := testkube.SUCCESS_ExecutionStatus
 	result.Status = &status
 	result.Output = string(out)
 	result.OutputType = "text/plain"
@@ -91,7 +91,7 @@ func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result kubtes
 
 			result.Steps = append(
 				result.Steps,
-				kubtest.ExecutionStepResult{
+				testkube.ExecutionStepResult{
 					Name:     fmt.Sprintf("%s - %s", suite.Name, test.Name),
 					Duration: test.Duration.String(),
 					Status:   MapStatus(test.Status),
@@ -108,8 +108,8 @@ func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result kubtes
 func MapStatus(in junit.Status) (out string) {
 	switch string(in) {
 	case "passed":
-		return string(kubtest.SUCCESS_ExecutionStatus)
+		return string(testkube.SUCCESS_ExecutionStatus)
 	default:
-		return string(kubtest.ERROR__ExecutionStatus)
+		return string(testkube.ERROR__ExecutionStatus)
 	}
 }
