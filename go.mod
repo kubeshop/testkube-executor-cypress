@@ -7,5 +7,5 @@ go 1.16
 require (
 	github.com/joshdk/go-junit v0.0.0-20210226021600-6145f504ca0d
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/kubeshop/testkube v0.5.39
+	github.com/kubeshop/testkube v0.5.43
 )
