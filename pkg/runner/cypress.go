@@ -52,6 +52,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
 
+	// handle errors if any
 	if err != nil {
 		return result.Err(err)
 	}
