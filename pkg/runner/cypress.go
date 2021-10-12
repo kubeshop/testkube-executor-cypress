@@ -47,18 +47,19 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		args = append(args, "--env", fmt.Sprintf("%s=%s", k, v))
 	}
 
-	// run cypress inside repo directory
+	// run cypress inside repo directory ignore execution error in case of failed test
 	out, err := process.LoggedExecuteInDir(outputDir, os.Stdout, "./node_modules/cypress/bin/cypress", args...)
+	suites, serr := junit.IngestFile(junitReportPath)
+	result = MapJunitToExecutionResults(out, suites)
+
 	if err != nil {
 		return result.Err(err)
 	}
-
-	suites, err := junit.IngestFile(junitReportPath)
-	if err != nil {
-		return result.Err(err)
+	if serr != nil {
+		return result.Err(serr)
 	}
 
-	return MapJunitToExecutionResults(out, suites)
+	return
 }
 
 // Validate checks if Execution has valid data in context of Cypress executor
