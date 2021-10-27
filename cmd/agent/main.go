@@ -6,20 +6,23 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kelseyhightower/envconfig"
 	"github.com/kubeshop/testkube-executor-cypress/pkg/runner"
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/storage/minio"
 )
 
-var (
-	endpoint        string
-	accessKeyID     string
-	secretAccessKey string
-	location        string
-	token           string
-	ssl             bool
-	scrapperEnabled bool
-)
+type Params struct {
+	Endpoint        string // RUNNER_ENDPOINT
+	AccessKeyID     string // RUNNER_ACCESSKEYID
+	SecretAccessKey string // RUNNER_SECRETACCESSKEY
+	Location        string // RUNNER_LOCATION
+	Token           string // RUNNER_TOKEN
+	Ssl             bool   // RUNNER_SSL
+	ScrapperEnabled bool   // RUNNER_SCRAPPERENABLED
+}
+
+var params Params
 
 func main() {
 
@@ -30,13 +33,17 @@ func main() {
 	}
 
 	script := args[1]
-
+	err := envconfig.Process("runner", &params)
+	if err != nil {
+		fmt.Println("error processing parameters", err)
+		return
+	}
 	e := testkube.Execution{}
 	json.Unmarshal([]byte(script), &e)
 	runner := runner.NewCypressRunner()
 	result := runner.Run(e)
 	fmt.Println(result)
-	if scrapperEnabled {
+	if params.ScrapperEnabled {
 		err := scrapeArtefacts(e.Id)
 		if err != nil {
 			fmt.Println("error occured while scrapping artefacts") // maybe we should consider the run failed since it is not able to save artefacts
@@ -46,7 +53,7 @@ func main() {
 }
 
 func scrapeArtefacts(id string) error {
-	client, err := minio.NewClient(endpoint, accessKeyID, secretAccessKey, location, token, ssl) // create storage client
+	client, err := minio.NewClient(params.Endpoint, params.AccessKeyID, params.SecretAccessKey, params.Location, params.Token, params.Ssl) // create storage client
 	if err != nil {
 		return err
 	}
