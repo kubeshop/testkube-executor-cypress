@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/kubeshop/testkube-executor-cypress/pkg/runner"
@@ -44,42 +43,15 @@ func main() {
 	result := runner.Run(e)
 	fmt.Println(result)
 	if params.ScrapperEnabled {
-		err := scrapeArtefacts(e.Id)
+		client, err := minio.NewClient(params.Endpoint, params.AccessKeyID, params.SecretAccessKey, params.Location, params.Token, params.Ssl) // create storage client
+		if err != nil {
+			fmt.Println("error occured creating minio client") // maybe we should consider the run failed since it is not able to save artefacts
+		}
+
+		err = client.ScrapeArtefacts(e.Id, "cypress/")
 		if err != nil {
 			fmt.Println("error occured while scrapping artefacts") // maybe we should consider the run failed since it is not able to save artefacts
 		}
 	}
 	fmt.Printf("$$$%s$$$", e.Id)
-}
-
-func scrapeArtefacts(id string) error {
-	client, err := minio.NewClient(params.Endpoint, params.AccessKeyID, params.SecretAccessKey, params.Location, params.Token, params.Ssl) // create storage client
-	if err != nil {
-		return err
-	}
-
-	err = client.CreateBucket(id) // create bucket name it by execution ID
-	if err != nil {
-		return fmt.Errorf("failed to create a bucket %s: %w", id, err)
-	}
-	err = filepath.Walk("cypress/", // cypress stores test artefacts in cypress directory by default
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			if !info.IsDir() {
-				fmt.Println(path, info.Size())
-				err = client.SaveFile(id, path) //The function will detect if there is a subdirectory and store accordingly
-				if err != nil {
-					return err
-				}
-			}
-
-			return nil
-		})
-	if err != nil {
-		return err
-	}
-	return nil
 }
