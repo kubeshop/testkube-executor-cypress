@@ -7,8 +7,23 @@ ENV GOOS=linux
 
 RUN cd cmd/agent;go build -o /runner -mod mod -a .
 
-FROM node:17-alpine3.12 
-RUN apk --no-cache add ca-certificates git xauth xvfb
+# using debian based image as alpine is not supported by Cypress yet
+# https://github.com/cypress-io/cypress/issues/419 
+
+FROM node:17
+RUN apt-get install -y libgtk2.0-0 \
+    libgtk-3-0 \
+    libgbm-dev \
+    libnotify-dev \
+    libgconf-2-4 \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    libxtst6 \
+    xauth \
+    xvfb \
+	git
+ 
 RUN npm install -g cypress
 WORKDIR /root/
 COPY --from=0 /runner /bin/runner
