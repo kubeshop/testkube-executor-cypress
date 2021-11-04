@@ -36,8 +36,14 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, err
 	}
 
+	// wrap stdout lines into JSON chunks we want it to have common interface for agent
+	// stdin <- testkube.Execution, stdout <- stream of json logs
+	// LoggedExecuteInDir will put wrapped JSON output to stdout AND get RAW output into out var
+	// json logs can be processed later on watch of pod logs
+	writer := output.NewJSONWrapWriter(os.Stdout)
+
 	// be gentle to different cypress versions, run from local npm deps
-	_, err = process.LoggedExecuteInDir(outputDir, os.Stdout, "npm", "install")
+	_, err = process.LoggedExecuteInDir(outputDir, writer, "npm", "install")
 	if err != nil {
 		return result, err
 	}
@@ -47,12 +53,6 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	for k, v := range execution.Params {
 		args = append(args, "--env", fmt.Sprintf("%s=%s", k, v))
 	}
-
-	// wrap stdout lines into JSON chunks we want it to have common interface for agent
-	// stdin <- testkube.Execution, stdout <- stream of json logs
-	// LoggedExecuteInDir will put wrapped JSON output to stdout AND get RAW output into out var
-	// json logs can be processed later on watch of pod logs
-	writer := output.NewJSONWrapWriter(os.Stdout)
 
 	// run cypress inside repo directory ignore execution error in case of failed test
 	out, err := process.LoggedExecuteInDir(outputDir, writer, "./node_modules/cypress/bin/cypress", args...)
