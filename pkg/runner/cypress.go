@@ -9,6 +9,7 @@ import (
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/git"
 	"github.com/kubeshop/testkube/pkg/process"
+	"github.com/kubeshop/testkube/pkg/runner/output"
 )
 
 func NewCypressRunner() *CypressRunner {
@@ -19,12 +20,12 @@ func NewCypressRunner() *CypressRunner {
 type CypressRunner struct {
 }
 
-func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult) {
+func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
 
 	// make some validation
-	err := r.Validate(execution)
+	err = r.Validate(execution)
 	if err != nil {
-		return result.Err(err)
+		return result, err
 	}
 
 	repo := execution.Repository
@@ -32,13 +33,13 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	// checkout repo
 	outputDir, err := git.PartialCheckout(repo.Uri, repo.Path, repo.Branch)
 	if err != nil {
-		return result.Err(err)
+		return result, err
 	}
 
 	// be gentle to different cypress versions, run from local npm deps
 	_, err = process.LoggedExecuteInDir(outputDir, os.Stdout, "npm", "install")
 	if err != nil {
-		return result.Err(err)
+		return result, err
 	}
 
 	junitReportPath := filepath.Join(outputDir, "results/junit.xml")
@@ -47,17 +48,23 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		args = append(args, "--env", fmt.Sprintf("%s=%s", k, v))
 	}
 
+	// wrap stdout lines into JSON chunks we want it to have common interface for agent
+	// stdin <- testkube.Execution, stdout <- stream of json logs
+	// LoggedExecuteInDir will put wrapped JSON output to stdout AND get RAW output into out var
+	// json logs can be processed later on watch of pod logs
+	writer := output.NewJSONWrapWriter(os.Stdout)
+
 	// run cypress inside repo directory ignore execution error in case of failed test
-	out, err := process.LoggedExecuteInDir(outputDir, os.Stdout, "./node_modules/cypress/bin/cypress", args...)
+	out, err := process.LoggedExecuteInDir(outputDir, writer, "./node_modules/cypress/bin/cypress", args...)
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
 
 	// handle errors if any
 	if err != nil {
-		return result.Err(err)
+		return result.Err(err), nil
 	}
 	if serr != nil {
-		return result.Err(serr)
+		return result.Err(serr), nil
 	}
 
 	return

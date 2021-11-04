@@ -1,19 +1,16 @@
+# syntax=docker/dockerfile:1
 FROM golang:1.17
-RUN apt update && apt install -y curl
-RUN apt-get install -y libgtk2.0-0 \
-    libgtk-3-0 \
-    libgbm-dev \
-    libnotify-dev \
-    libgconf-2-4 \
-    libnss3 \
-    libxss1 \
-    libasound2 \
-    libxtst6 \
-    xauth \
-    xvfb \
-    nodejs \
-    npm
-RUN npm install cypress -g
-WORKDIR /
-ADD . /
-RUN go build -o /usr/local/bin/agent cmd/agent/main.go 
+WORKDIR /build
+COPY . .
+ENV CGO_ENABLED=0 
+ENV GOOS=linux
+
+RUN cd cmd/agent;go build -o /runner -mod mod -a .
+
+FROM node:17-alpine3.12 
+RUN apk --no-cache add ca-certificates
+RUN npm install -g cypress
+WORKDIR /root/
+COPY --from=0 /runner /bin/runner
+EXPOSE 8082
+ENTRYPOINT ["/bin/runner"]

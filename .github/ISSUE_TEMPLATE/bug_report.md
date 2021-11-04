@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve testkube
+about: Create a report to help us improve TestKube
 title: ''
 labels: 'bug 🐛'
 assignees: ''
