@@ -11,7 +11,7 @@ RUN cd cmd/agent;go build -o /runner -mod mod -a .
 # https://github.com/cypress-io/cypress/issues/419 
 
 FROM node:17
-RUN apt-get install -y libgtk2.0-0 \
+RUN apt-get update && apt-get install -y libgtk2.0-0 \
     libgtk-3-0 \
     libgbm-dev \
     libnotify-dev \
