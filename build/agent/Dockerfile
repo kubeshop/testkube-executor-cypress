@@ -24,7 +24,8 @@ RUN apt-get update && apt-get install -y libgtk2.0-0 \
     xvfb \
 	git
  
-RUN npm install -g cypress
+RUN npm install -g cypress browserslist@latest
+
 WORKDIR /root/
 COPY --from=0 /runner /bin/runner
 ENTRYPOINT ["/bin/runner"]
