@@ -1,6 +1,17 @@
+# syntax=docker/dockerfile:1
 FROM golang:1.17
-RUN apt update && apt install -y curl
-RUN apt-get install -y libgtk2.0-0 \
+WORKDIR /build
+COPY . .
+ENV CGO_ENABLED=0 
+ENV GOOS=linux
+
+RUN cd cmd/agent;go build -o /runner -mod mod -a .
+
+# using debian based image as alpine is not supported by Cypress yet
+# https://github.com/cypress-io/cypress/issues/419 
+
+FROM node:17
+RUN apt-get update && apt-get install -y libgtk2.0-0 \
     libgtk-3-0 \
     libgbm-dev \
     libnotify-dev \
@@ -11,9 +22,10 @@ RUN apt-get install -y libgtk2.0-0 \
     libxtst6 \
     xauth \
     xvfb \
-    nodejs \
-    npm
-RUN npm install cypress -g
-WORKDIR /
-ADD . /
-RUN go build -o /usr/local/bin/agent cmd/agent/main.go 
+	git
+ 
+RUN npm install -g cypress browserslist@latest
+
+WORKDIR /root/
+COPY --from=0 /runner /bin/runner
+ENTRYPOINT ["/bin/runner"]
