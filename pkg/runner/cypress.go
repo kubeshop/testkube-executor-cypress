@@ -2,15 +2,13 @@ package runner
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	junit "github.com/joshdk/go-junit"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
+	"github.com/kubeshop/testkube/pkg/executor"
 	"github.com/kubeshop/testkube/pkg/git"
-	"github.com/kubeshop/testkube/pkg/process"
-	"github.com/kubeshop/testkube/pkg/runner/output"
 	"github.com/kubeshop/testkube/pkg/storage/minio"
 )
 
@@ -56,26 +54,19 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, err
 	}
 
-	// wrap stdout lines into JSON chunks we want it to have common interface for agent
-	// stdin <- testkube.Execution, stdout <- stream of json logs
-	// LoggedExecuteInDir will put wrapped JSON output to stdout AND get RAW output into out var
-	// json logs can be processed later on watch of pod logs
-	writer := output.NewJSONWrapWriter(os.Stdout)
-
 	// be gentle to different cypress versions, run from local npm deps
-	_, err = process.LoggedExecuteInDir(outputDir, writer, "npm", "install")
+	_, err = executor.Run(outputDir, "npm", "install")
 	if err != nil {
 		return result, err
 	}
 
 	junitReportPath := filepath.Join(outputDir, "results/junit.xml")
 	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath)}
-	for k, v := range execution.Params {
-		args = append(args, "--env", fmt.Sprintf("%s=%s", k, v))
-	}
+	// append args from execution
+	args = append(args, execution.Args...)
 
 	// run cypress inside repo directory ignore execution error in case of failed test
-	out, err := process.LoggedExecuteInDir(outputDir, writer, "./node_modules/cypress/bin/cypress", args...)
+	out, err := executor.Run(outputDir, "./node_modules/cypress/bin/cypress", args...)
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
 
