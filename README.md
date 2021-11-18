@@ -1,20 +1,4 @@
-```
-████████ ███████ ███████ ████████ ██   ██ ██    ██ ██████  ███████ 
-   ██    ██      ██         ██    ██  ██  ██    ██ ██   ██ ██      
-   ██    █████   ███████    ██    █████   ██    ██ ██████  █████   
-   ██    ██           ██    ██    ██  ██  ██    ██ ██   ██ ██      
-   ██    ███████ ███████    ██    ██   ██  ██████  ██████  ███████ 
-                                           /tɛst kjub/ by Kubeshop
-
-                                       CYPRESS EXECUTOR
-```
-
-<!-- try to enable it after snyk resolves https://github.com/snyk/snyk/issues/347
-
-Known vulnerabilities: ![testkube](https://snyk.io/test/github/kubeshop/testkube/badge.svg)
-![testkube-operator](https://snyk.io/test/github/kubeshop-operator/testkube/badge.svg)
-![helm-charts](https://snyk.io/test/github/kubeshop/helm-charts/badge.svg)
--->
+![TestKube Logo](https://raw.githubusercontent.com/kubeshop/testkube/main/assets/logo-dark-text-full.png)
                                                            
 # Welcome to testkube Cypress Executor
 
