@@ -79,13 +79,21 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	}
 
 	if r.Params.ScrapperEnabled {
-		client, err := minio.NewClient(r.Params.Endpoint, r.Params.AccessKeyID, r.Params.SecretAccessKey, r.Params.Location, r.Params.Token, r.Params.Ssl) // create storage client
+		client := minio.NewClient(r.Params.Endpoint, r.Params.AccessKeyID, r.Params.SecretAccessKey, r.Params.Location, r.Params.Token, r.Params.Ssl) // create storage client
+		err := client.Connect()
 		if err != nil {
+			// TODO fix this one - should log or maybe introduce some warning status for test results
 			fmt.Println("error occured creating minio client") // maybe we should consider the run failed since it is not able to save artefacts
 		}
 
-		err = client.ScrapeArtefacts(execution.Id, "cypress/")
+		directories := []string{
+			filepath.Join(outputDir, "cypress/videos"),
+			filepath.Join(outputDir, "cypress/screenshots"),
+		}
+
+		err = client.ScrapeArtefacts(execution.Id, directories...)
 		if err != nil {
+			// TODO fix this one
 			fmt.Println("error occured while scrapping artefacts") // maybe we should consider the run failed since it is not able to save artefacts
 		}
 	}
