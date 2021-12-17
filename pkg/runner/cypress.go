@@ -70,20 +70,13 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
 
-	// handle errors if any
-	if err != nil {
-		return result.Err(err), nil
-	}
-	if serr != nil {
-		return result.Err(serr), nil
-	}
-
 	if r.Params.ScrapperEnabled {
+		fmt.Println("Scrapper enabled fetching videos and snapshots")
 		client := minio.NewClient(r.Params.Endpoint, r.Params.AccessKeyID, r.Params.SecretAccessKey, r.Params.Location, r.Params.Token, r.Params.Ssl) // create storage client
 		err := client.Connect()
 		if err != nil {
 			// TODO fix this one - should log or maybe introduce some warning status for test results
-			fmt.Println("error occured creating minio client") // maybe we should consider the run failed since it is not able to save artefacts
+			fmt.Println("error occured creating minio client", err) // maybe we should consider the run failed since it is not able to save artefacts
 		}
 
 		directories := []string{
@@ -94,8 +87,16 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		err = client.ScrapeArtefacts(execution.Id, directories...)
 		if err != nil {
 			// TODO fix this one
-			fmt.Println("error occured while scrapping artefacts") // maybe we should consider the run failed since it is not able to save artefacts
+			fmt.Println("error occured while scrapping artefacts", err) // maybe we should consider the run failed since it is not able to save artefacts
 		}
+	}
+
+	// handle errors if any
+	if err != nil {
+		return result.Err(err), nil
+	}
+	if serr != nil {
+		return result.Err(serr), nil
 	}
 
 	return
