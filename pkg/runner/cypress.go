@@ -6,10 +6,12 @@ import (
 
 	junit "github.com/joshdk/go-junit"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/kubeshop/kubetest/pkg/log"
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/executor"
 	"github.com/kubeshop/testkube/pkg/git"
 	"github.com/kubeshop/testkube/pkg/storage/minio"
+	"go.uber.org/zap"
 )
 
 type Params struct {
@@ -23,7 +25,9 @@ type Params struct {
 }
 
 func NewCypressRunner() *CypressRunner {
-	runner := &CypressRunner{}
+	runner := &CypressRunner{
+		Log: log.DefaultLogger,
+	}
 
 	err := envconfig.Process("runner", &runner.Params)
 	if err != nil {
@@ -36,6 +40,7 @@ func NewCypressRunner() *CypressRunner {
 // CypressRunner - implements runner interface used in worker to start test execution
 type CypressRunner struct {
 	Params Params
+	Log    *zap.SugaredLogger
 }
 
 func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
@@ -43,6 +48,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	// make some validation
 	err = r.Validate(execution)
 	if err != nil {
+		r.Log.Errorw("execution validate error", "error", err)
 		return result, err
 	}
 
@@ -51,12 +57,14 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	// checkout repo
 	outputDir, err := git.PartialCheckout(repo.Uri, repo.Path, repo.Branch)
 	if err != nil {
+		r.Log.Errorw("git checkout error", "error", err)
 		return result, err
 	}
 
 	// be gentle to different cypress versions, run from local npm deps
 	_, err = executor.Run(outputDir, "npm", "install")
 	if err != nil {
+		r.Log.Errorw("npm install error", "error", err)
 		return result, err
 	}
 
@@ -71,7 +79,9 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	result = MapJunitToExecutionResults(out, suites)
 
 	if r.Params.ScrapperEnabled {
-		fmt.Println("Scrapper enabled fetching videos and snapshots")
+		r.Log.Errorw("Scrapper enabled fetching videos and snapshots", "error", err)
+
+		fmt.Println("")
 		client := minio.NewClient(r.Params.Endpoint, r.Params.AccessKeyID, r.Params.SecretAccessKey, r.Params.Location, r.Params.Token, r.Params.Ssl) // create storage client
 		err := client.Connect()
 		if err != nil {
