@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"net/url"
 	"path/filepath"
 
 	junit "github.com/joshdk/go-junit"
@@ -20,6 +21,8 @@ type Params struct {
 	Token           string // RUNNER_TOKEN
 	Ssl             bool   // RUNNER_SSL
 	ScrapperEnabled bool   // RUNNER_SCRAPPERENABLED
+	GitUsername     string // RUNNER_GITUSERNAME
+	GitToken        string // RUNNER_GITTOKEN
 }
 
 func NewCypressRunner() *CypressRunner {
@@ -47,6 +50,16 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	}
 
 	repo := execution.Repository
+	uri := repo.Uri
+	if r.Params.GitUsername != "" && r.Params.GitToken != "" {
+		gitURI, err := url.Parse(uri)
+		if err != nil {
+			return result, err
+		}
+
+		gitURI.User = url.UserPassword(r.Params.GitUsername, r.Params.GitToken)
+		uri = gitURI.String()
+	}
 
 	// checkout repo
 	outputDir, err := git.PartialCheckout(repo.Uri, repo.Path, repo.Branch)
