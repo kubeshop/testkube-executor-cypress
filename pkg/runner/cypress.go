@@ -62,7 +62,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	}
 
 	// checkout repo
-	outputDir, err := git.PartialCheckout(repo.Uri, repo.Path, repo.Branch)
+	outputDir, err := git.PartialCheckout(uri, repo.Path, repo.Branch)
 	if err != nil {
 		return result, err
 	}
