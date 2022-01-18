@@ -11,17 +11,17 @@ COMMIT ?= $(shell git log -1 --pretty=format:"%h")
 
 # TODO bump this port up - to be able to run multiple executors on devs machine
 run-executor: 
-	EXECUTOR_PORT=8084 go run cmd/executor/main.go
+	EXECUTOR_PORT=8084 go run cmd/agent/main.go
 
 run-mongo-dev: 
 	docker run -p 27017:27017 mongo
 
 
 build: 
-	go build -o $(BIN_DIR)/$(NAME)-executor cmd/executor/main.go
+	go build -o $(BIN_DIR)/$(NAME)-executor cmd/agent/main.go
 
 docker-build-executor: 
-	docker build -t $(NAME)-executor -f build/executor/Dockerfile .
+	docker build -t $(NAME)-executor -f build/agent/Dockerfile .
 
 docker-build-runner: 
 	docker build -t kubeshop/$(NAME)-runner -f build/agent/Dockerfile .
