@@ -3,8 +3,8 @@ package runner
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"path/filepath"
+	"strings"
 
 	junit "github.com/joshdk/go-junit"
 	"github.com/kelseyhightower/envconfig"
@@ -74,14 +74,14 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, err
 	}
 
+	envVars := make([]string, 0, len(execution.Params))
 	for key, value := range execution.Params {
-		if err = os.Setenv(key, value); err != nil {
-			return result, err
-		}
+		envVars = append(envVars, fmt.Sprintf("%s=%s", key, value))
 	}
 
 	junitReportPath := filepath.Join(outputDir, "results/junit.xml")
-	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath)}
+	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath),
+		"--env", strings.Join(envVars, ",")}
 	// append args from execution
 	args = append(args, execution.Args...)
 
