@@ -3,6 +3,7 @@ package runner
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 
 	junit "github.com/joshdk/go-junit"
@@ -71,6 +72,12 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	_, err = executor.Run(outputDir, "npm", "install")
 	if err != nil {
 		return result, err
+	}
+
+	for key, value := range execution.Params {
+		if err = os.Setenv(key, value); err != nil {
+			return result, err
+		}
 	}
 
 	junitReportPath := filepath.Join(outputDir, "results/junit.xml")
