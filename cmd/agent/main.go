@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/kubeshop/testkube-executor-cypress/pkg/runner"
-	"github.com/kubeshop/testkube/pkg/runner/agent"
+	"github.com/kubeshop/testkube/pkg/executor/agent"
 )
 
 func main() {

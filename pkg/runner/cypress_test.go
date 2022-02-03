@@ -9,24 +9,28 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	t.Skip("move this test to e2e test suite with valid environment setup")
+	// t.Skip("move this test to e2e test suite with valid environment setup")
 
 	// Can't run it in my default install on mac
 	os.Setenv("CYPRESS_CACHE_FOLDER", os.TempDir())
 
-	runner := CypressRunner{}
+	runner := NewCypressRunner()
 	repoURI := "https://github.com/kubeshop/testkube-executor-cypress.git"
 	result, err := runner.Run(testkube.Execution{
 		Params: map[string]string{"testparam": "testvalue"},
-		Repository: &testkube.Repository{
-			Uri:    repoURI,
-			Branch: "jacek/feature/json-output",
-			Path:   "examples",
+		Content: &testkube.ScriptContent{
+			Type_: string(testkube.ScriptContentTypeGitDir),
+			Repository: &testkube.Repository{
+				Type_:  "git",
+				Uri:    repoURI,
+				Branch: "jacek/feature/json-output",
+				Path:   "examples",
+			},
 		},
 	})
 
-	fmt.Printf("%+v\n", result)
-	fmt.Printf("%+v\n", err)
+	fmt.Printf("RESULT: %+v\n", result)
+	fmt.Printf("ERROR:  %+v\n", err)
 
 	t.Fail()
 

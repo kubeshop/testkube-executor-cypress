@@ -2,7 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -10,8 +9,9 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/executor"
-	"github.com/kubeshop/testkube/pkg/git"
-	"github.com/kubeshop/testkube/pkg/storage/minio"
+	"github.com/kubeshop/testkube/pkg/executor/content"
+	"github.com/kubeshop/testkube/pkg/executor/output"
+	"github.com/kubeshop/testkube/pkg/executor/scrapper"
 )
 
 type Params struct {
@@ -27,11 +27,23 @@ type Params struct {
 }
 
 func NewCypressRunner() *CypressRunner {
-	runner := &CypressRunner{}
-
-	err := envconfig.Process("runner", &runner.Params)
+	var params Params
+	err := envconfig.Process("runner", &params)
 	if err != nil {
 		panic(err.Error())
+	}
+
+	runner := &CypressRunner{
+		Fetcher: content.NewFetcher(),
+		Scrapper: scrapper.NewScrapper(
+			params.Endpoint,
+			params.AccessKeyID,
+			params.SecretAccessKey,
+			params.Location,
+			params.Token,
+			params.Ssl,
+		),
+		Params: params,
 	}
 
 	return runner
@@ -39,7 +51,9 @@ func NewCypressRunner() *CypressRunner {
 
 // CypressRunner - implements runner interface used in worker to start test execution
 type CypressRunner struct {
-	Params Params
+	Params   Params
+	Fetcher  content.ContentFetcher
+	Scrapper *scrapper.Scrapper
 }
 
 func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
@@ -50,28 +64,25 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, err
 	}
 
-	repo := execution.Repository
-	uri := repo.Uri
-	if r.Params.GitUsername != "" && r.Params.GitToken != "" {
-		gitURI, err := url.Parse(uri)
-		if err != nil {
-			return result, err
-		}
-
-		gitURI.User = url.UserPassword(r.Params.GitUsername, r.Params.GitToken)
-		uri = gitURI.String()
-	}
-
-	// checkout repo
-	outputDir, err := git.PartialCheckout(uri, repo.Path, repo.Branch)
+	path, err := r.Fetcher.Fetch(execution.Content)
 	if err != nil {
 		return result, err
+	}
+
+	if execution.Content.IsFile() {
+		output.PrintEvent("using file", execution)
+
+		// TODO add cypress project structure
+		// TODO checkout this repo with `skeleton` path
+		// TODO overwrite skeleton/cypress/integration/test.js
+		//      file with execution content git file
+		output.PrintError(fmt.Errorf("PASSING CYPRESS SCRIPT AS SINGLE FILE NOT IMPLEMENTED YET"))
 	}
 
 	// be gentle to different cypress versions, run from local npm deps
-	_, err = executor.Run(outputDir, "npm", "install")
+	_, err = executor.Run(path, "npm", "install")
 	if err != nil {
-		return result, err
+		return result, fmt.Errorf("npm install error: %w", err)
 	}
 
 	envVars := make([]string, 0, len(execution.Params))
@@ -79,63 +90,51 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		envVars = append(envVars, fmt.Sprintf("%s=%s", key, value))
 	}
 
-	junitReportPath := filepath.Join(outputDir, "results/junit.xml")
+	junitReportPath := filepath.Join(path, "results/junit.xml")
 	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath),
 		"--env", strings.Join(envVars, ",")}
+
 	// append args from execution
 	args = append(args, execution.Args...)
 
 	// run cypress inside repo directory ignore execution error in case of failed test
-	out, err := executor.Run(outputDir, "./node_modules/cypress/bin/cypress", args...)
+	out, err := executor.Run(path, "./node_modules/cypress/bin/cypress", args...)
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
 
+	// scrape artifacts first even if there are errors above
 	if r.Params.ScrapperEnabled {
-		fmt.Println("Scrapper enabled fetching videos and snapshots")
-		client := minio.NewClient(r.Params.Endpoint, r.Params.AccessKeyID, r.Params.SecretAccessKey, r.Params.Location, r.Params.Token, r.Params.Ssl) // create storage client
-		err := client.Connect()
-		if err != nil {
-			// TODO fix this one - should log or maybe introduce some warning status for test results
-			fmt.Println("error occured creating minio client", err) // maybe we should consider the run failed since it is not able to save artefacts
-		}
-
 		directories := []string{
-			filepath.Join(outputDir, "cypress/videos"),
-			filepath.Join(outputDir, "cypress/screenshots"),
+			filepath.Join(path, "cypress/videos"),
+			filepath.Join(path, "cypress/screenshots"),
 		}
-
-		err = client.ScrapeArtefacts(execution.Id, directories...)
+		err := r.Scrapper.Scrape(execution.Id, directories)
 		if err != nil {
-			// TODO fix this one
-			fmt.Println("error occured while scrapping artefacts", err) // maybe we should consider the run failed since it is not able to save artefacts
+			return result.WithErrors(fmt.Errorf("scrape artifacts error: %w", err)), nil
 		}
 	}
 
-	// handle errors if any
-	if err != nil {
-		return result.Err(err), nil
-	}
-	if serr != nil {
-		return result.Err(serr), nil
-	}
-
-	return
+	return result.WithErrors(err, serr), nil
 }
 
 // Validate checks if Execution has valid data in context of Cypress executor
 // Cypress executor runs currently only based on cypress project
 func (r *CypressRunner) Validate(execution testkube.Execution) error {
 
-	if execution.Repository == nil {
+	if execution.Content == nil {
+		return fmt.Errorf("can't find any content to run in execution data: %+v", execution)
+	}
+
+	if execution.Content.Repository == nil {
 		return fmt.Errorf("cypress executor handle only repository based tests, but repository is nil")
 	}
 
-	if execution.Repository.Path == "" {
-		return fmt.Errorf("can't find repository path in params, repo:%+v", execution.Repository)
+	if execution.Content.Repository.Path == "" {
+		return fmt.Errorf("can't find repository path in params, repo:%+v", execution.Content.Repository)
 	}
 
-	if execution.Repository.Branch == "" {
-		return fmt.Errorf("can't find branch in params, repo:%+v", execution.Repository)
+	if execution.Content.Repository.Branch == "" {
+		return fmt.Errorf("can't find branch in params, repo:%+v", execution.Content.Repository)
 	}
 
 	return nil
