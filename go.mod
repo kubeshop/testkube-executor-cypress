@@ -7,7 +7,7 @@ go 1.17
 require (
 	github.com/joshdk/go-junit v0.0.0-20210226021600-6145f504ca0d
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/kubeshop/testkube v0.8.8-beta006
+	github.com/kubeshop/testkube v0.8.8-beta007
 )
 
 require (
@@ -36,6 +36,9 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	go.mongodb.org/mongo-driver v1.8.3 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a // indirect
