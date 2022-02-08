@@ -3,11 +3,14 @@
 	"scriptName": "dashboard-test",
 	"scriptType": "cypress/project",
 	"name": "currently-giving-blowfish",
-	"repository": {
-		"type": "git",
-		"uri": "https://github.com/kubeshop/testkube-dashboard.git",
-		"branch": "main",
-		"path": "test"
+	"content": {
+		"type": "git-dir",
+		"repository": {
+			"type": "git",
+			"uri": "https://github.com/kubeshop/testkube-dashboard.git",
+			"branch": "main",
+			"path": "test"
+		}
 	},
 	"startTime": "2021-11-04T12:14:57.118Z",
 	"endTime": "0001-01-01T00:00:00Z",

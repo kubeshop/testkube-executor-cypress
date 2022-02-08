@@ -1,4 +1,4 @@
-.PHONY: test cover 
+.PHONY: test cover build
 
 CHART_NAME=cypress-executor
 NAME ?= cypress
