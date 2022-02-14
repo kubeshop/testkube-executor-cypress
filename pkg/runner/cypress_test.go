@@ -18,8 +18,8 @@ func TestRun(t *testing.T) {
 	repoURI := "https://github.com/kubeshop/testkube-executor-cypress.git"
 	result, err := runner.Run(testkube.Execution{
 		Params: map[string]string{"testparam": "testvalue"},
-		Content: &testkube.ScriptContent{
-			Type_: string(testkube.ScriptContentTypeGitDir),
+		Content: &testkube.TestContent{
+			Type_: string(testkube.TestContentTypeGitDir),
 			Repository: &testkube.Repository{
 				Type_:  "git",
 				Uri:    repoURI,

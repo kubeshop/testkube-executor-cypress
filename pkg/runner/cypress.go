@@ -76,7 +76,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		// TODO checkout this repo with `skeleton` path
 		// TODO overwrite skeleton/cypress/integration/test.js
 		//      file with execution content git file
-		return result, fmt.Errorf("passing cypress script as single file not implemented yet")
+		return result, fmt.Errorf("passing cypress test as single file not implemented yet")
 	}
 
 	// be gentle to different cypress versions, run from local npm deps
