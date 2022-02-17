@@ -64,13 +64,6 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, err
 	}
 
-	if r.Params.GitUsername != "" && r.Params.GitToken != "" {
-		if execution.Content != nil && execution.Content.Repository != nil {
-			execution.Content.Repository.Username = r.Params.GitUsername
-			execution.Content.Repository.Token = r.Params.GitToken
-		}
-	}
-
 	path, err := r.Fetcher.Fetch(execution.Content)
 	if err != nil {
 		return result, err
