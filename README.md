@@ -1,8 +1,8 @@
-![Testkube Logo](https://raw.githubusercontent.com/kubeshop/testkube/main/assets/logo-dark-text-full.png)
+![Testkube Logo](https://raw.githubusercontent.com/kubeshop/testkube/main/assets/testkube-color-gray.png)
                                                            
 # Welcome to testkube Cypress Executor
 
-Testkube Cypress Executor is test executor for [testkube](https://testkube.io)
+Kubetest Cypress Executor is test executor for [testkube](https://testkube.io)
 
 # Issues and enchancements 
 
