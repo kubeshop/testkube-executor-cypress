@@ -34,7 +34,7 @@ func NewCypressRunner() *CypressRunner {
 	}
 
 	runner := &CypressRunner{
-		Fetcher: content.NewFetcher(),
+		Fetcher: content.NewFetcher(""),
 		Scrapper: scrapper.NewScrapper(
 			params.Endpoint,
 			params.AccessKeyID,
@@ -148,7 +148,7 @@ func (r *CypressRunner) Validate(execution testkube.Execution) error {
 }
 
 func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result testkube.ExecutionResult) {
-	status := testkube.SUCCESS_ExecutionStatus
+	status := testkube.PASSED_ExecutionStatus
 	result.Status = &status
 	result.Output = string(out)
 	result.OutputType = "text/plain"
@@ -175,8 +175,8 @@ func MapJunitToExecutionResults(out []byte, suites []junit.Suite) (result testku
 func MapStatus(in junit.Status) (out string) {
 	switch string(in) {
 	case "passed":
-		return string(testkube.SUCCESS_ExecutionStatus)
+		return string(testkube.PASSED_ExecutionStatus)
 	default:
-		return string(testkube.ERROR__ExecutionStatus)
+		return string(testkube.FAILED_ExecutionStatus)
 	}
 }
