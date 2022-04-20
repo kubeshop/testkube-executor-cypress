@@ -17,7 +17,6 @@ func TestRun(t *testing.T) {
 	runner := NewCypressRunner()
 	repoURI := "https://github.com/kubeshop/testkube-executor-cypress.git"
 	result, err := runner.Run(testkube.Execution{
-		Params: map[string]string{"testparam": "testvalue"},
 		Content: &testkube.TestContent{
 			Type_: string(testkube.TestContentTypeGitDir),
 			Repository: &testkube.Repository{
