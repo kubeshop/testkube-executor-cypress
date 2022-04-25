@@ -1,6 +1,6 @@
 module github.com/kubeshop/testkube-executor-cypress
 
-go 1.17
+go 1.18
 
 // replace github.com/kubeshop/testkube v0.6.19 => ../testkube
 
