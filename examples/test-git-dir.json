@@ -8,8 +8,7 @@
 		"repository": {
 			"type": "git",
 			"uri": "https://github.com/kubeshop/testkube-dashboard.git",
-			"branch": "main",
-			"path": "test"
+			"branch": "main"
 		}
 	},
 	"startTime": "2021-11-04T12:14:57.118Z",
