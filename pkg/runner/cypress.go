@@ -11,7 +11,7 @@ import (
 	"github.com/kubeshop/testkube/pkg/executor"
 	"github.com/kubeshop/testkube/pkg/executor/content"
 	"github.com/kubeshop/testkube/pkg/executor/output"
-	"github.com/kubeshop/testkube/pkg/executor/scrapper"
+	"github.com/kubeshop/testkube/pkg/executor/scraper"
 )
 
 type Params struct {
@@ -26,16 +26,16 @@ type Params struct {
 	GitToken        string // RUNNER_GITTOKEN
 }
 
-func NewCypressRunner() *CypressRunner {
+func NewCypressRunner() (*CypressRunner, error) {
 	var params Params
 	err := envconfig.Process("runner", &params)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	runner := &CypressRunner{
 		Fetcher: content.NewFetcher(""),
-		Scrapper: scrapper.NewScrapper(
+		Scraper: scraper.NewMinioScraper(
 			params.Endpoint,
 			params.AccessKeyID,
 			params.SecretAccessKey,
@@ -46,14 +46,14 @@ func NewCypressRunner() *CypressRunner {
 		Params: params,
 	}
 
-	return runner
+	return runner, nil
 }
 
 // CypressRunner - implements runner interface used in worker to start test execution
 type CypressRunner struct {
-	Params   Params
-	Fetcher  content.ContentFetcher
-	Scrapper *scrapper.Scrapper
+	Params  Params
+	Fetcher content.ContentFetcher
+	Scraper scraper.Scraper
 }
 
 func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
@@ -115,7 +115,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 			filepath.Join(path, "cypress/videos"),
 			filepath.Join(path, "cypress/screenshots"),
 		}
-		err := r.Scrapper.Scrape(execution.Id, directories)
+		err := r.Scraper.Scrape(execution.Id, directories)
 		if err != nil {
 			return result.WithErrors(fmt.Errorf("scrape artifacts error: %w", err)), nil
 		}

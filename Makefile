@@ -56,3 +56,6 @@ prerelease:
 release: 
 	go run cmd/tools/main.go release -a $(CHART_NAME)
 
+update-modules:
+	go mod tidy
+	go get -u ./...

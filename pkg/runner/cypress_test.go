@@ -14,7 +14,10 @@ func TestRun(t *testing.T) {
 	// Can't run it in my default install on mac
 	os.Setenv("CYPRESS_CACHE_FOLDER", os.TempDir())
 
-	runner := NewCypressRunner()
+	runner, err := NewCypressRunner()
+	if err != nil {
+		t.Fail()
+	}
 	repoURI := "https://github.com/kubeshop/testkube-executor-cypress.git"
 	result, err := runner.Run(testkube.Execution{
 		Content: &testkube.TestContent{
