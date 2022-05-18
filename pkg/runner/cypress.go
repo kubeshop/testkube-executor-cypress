@@ -92,9 +92,9 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("npm install error: %w", err)
 	}
 
-	envVars := make([]string, 0, len(execution.Params))
-	for key, value := range execution.Params {
-		envVars = append(envVars, fmt.Sprintf("%s=%s", key, value))
+	envVars := make([]string, 0, len(execution.Variables))
+	for _, value := range execution.Variables {
+		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
 	}
 
 	junitReportPath := filepath.Join(path, "results/junit.xml")
