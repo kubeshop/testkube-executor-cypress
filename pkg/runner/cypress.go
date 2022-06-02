@@ -1,7 +1,9 @@
 package runner
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -86,10 +88,24 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("passing cypress test as single file not implemented yet")
 	}
 
-	// be gentle to different cypress versions, run from local npm deps
-	_, err = executor.Run(path, "npm", "install")
-	if err != nil {
-		return result, fmt.Errorf("npm install error: %w", err)
+	if _, err := os.Stat(filepath.Join(path, "package.json")); err == nil {
+		// be gentle to different cypress versions, run from local npm deps
+		_, err = executor.Run(path, "npm", "install")
+		if err != nil {
+			return result, fmt.Errorf("npm install error: %w", err)
+		}
+	} else if errors.Is(err, os.ErrNotExist) {
+		_, err = executor.Run(path, "npm", "init", "--yes")
+		if err != nil {
+			return result, fmt.Errorf("npm init error: %w", err)
+		}
+
+		_, err = executor.Run(path, "npm", "install", "cypress", "--save-dev")
+		if err != nil {
+			return result, fmt.Errorf("npm install cypress error: %w", err)
+		}
+	} else {
+		return result, fmt.Errorf("checking package.json file: %w", err)
 	}
 
 	envVars := make([]string, 0, len(execution.Variables))
