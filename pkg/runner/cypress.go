@@ -92,6 +92,12 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("npm install error: %w", err)
 	}
 
+	// handle project local Cypress version install (`Cypress` app)
+	_, err = executor.Run(path, "./node_modules/cypress/bin/cypress", "install")
+	if err != nil {
+		return result, fmt.Errorf("cypress binary install error: %w", err)
+	}
+
 	envVars := make([]string, 0, len(execution.Variables))
 	for _, value := range execution.Variables {
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
