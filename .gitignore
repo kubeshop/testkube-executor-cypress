@@ -31,3 +31,5 @@ examples/node_modules
 examples/cypress/videos
 examples/cypress/screenshots 
 examples/results 
+
+.vscode
