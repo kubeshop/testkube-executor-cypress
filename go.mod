@@ -7,7 +7,7 @@ go 1.18
 require (
 	github.com/joshdk/go-junit v0.0.0-20210226021600-6145f504ca0d
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/kubeshop/testkube v1.1.10
+	github.com/kubeshop/testkube v1.3.0-beta001
 )
 
 require (
@@ -39,9 +39,9 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
-	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f // indirect
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
-	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
+	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
