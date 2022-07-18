@@ -12,7 +12,7 @@ import (
 func main() {
 	r, err := runner.NewCypressRunner()
 	if err != nil {
-		output.PrintError(fmt.Errorf("could not initialize runner: %w", err))
+		output.PrintError(os.Stderr, fmt.Errorf("could not initialize runner: %w", err))
 		os.Exit(1)
 	}
 	agent.Run(r, os.Args)
