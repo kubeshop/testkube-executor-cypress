@@ -28,4 +28,7 @@ RUN npm install -g cypress browserslist@latest
 
 WORKDIR /root/
 COPY --from=0 /runner /bin/runner
+
+USER 1001 
+
 ENTRYPOINT ["/bin/runner"]
