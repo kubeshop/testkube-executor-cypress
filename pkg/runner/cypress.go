@@ -90,28 +90,28 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 
 	if _, err := os.Stat(filepath.Join(path, "package.json")); err == nil {
 		// be gentle to different cypress versions, run from local npm deps
-		_, err = executor.Run(path, "npm", "install")
+		out, err := executor.Run(path, "npm", "install")
 		if err != nil {
-			return result, fmt.Errorf("npm install error: %w", err)
+			return result, fmt.Errorf("npm install error: %w\n\n%s", err, out)
 		}
 	} else if errors.Is(err, os.ErrNotExist) {
-		_, err = executor.Run(path, "npm", "init", "--yes")
+		out, err := executor.Run(path, "npm", "init", "--yes")
 		if err != nil {
-			return result, fmt.Errorf("npm init error: %w", err)
+			return result, fmt.Errorf("npm init error: %w\n\n%s", err, out)
 		}
 
-		_, err = executor.Run(path, "npm", "install", "cypress", "--save-dev")
+		out, err = executor.Run(path, "npm", "install", "cypress", "--save-dev")
 		if err != nil {
-			return result, fmt.Errorf("npm install cypress error: %w", err)
+			return result, fmt.Errorf("npm install cypress error: %w\n\n%s", err, out)
 		}
 	} else {
 		return result, fmt.Errorf("checking package.json file: %w", err)
 	}
 
 	// handle project local Cypress version install (`Cypress` app)
-	_, err = executor.Run(path, "./node_modules/cypress/bin/cypress", "install")
+	out, err := executor.Run(path, "./node_modules/cypress/bin/cypress", "install")
 	if err != nil {
-		return result, fmt.Errorf("cypress binary install error: %w", err)
+		return result, fmt.Errorf("cypress binary install error: %w\n\n%s", err, out)
 	}
 
 	envVars := make([]string, 0, len(execution.Variables))
@@ -127,7 +127,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	args = append(args, execution.Args...)
 
 	// run cypress inside repo directory ignore execution error in case of failed test
-	out, err := executor.Run(path, "./node_modules/cypress/bin/cypress", args...)
+	out, err = executor.Run(path, "./node_modules/cypress/bin/cypress", args...)
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
 

@@ -26,6 +26,13 @@ RUN apt-get update && apt-get install -y libgtk2.0-0 \
  
 RUN npm install -g cypress browserslist@latest
 
-WORKDIR /root/
-COPY --from=0 /runner /bin/runner
+RUN mkdir /home/runner
+RUN chown -R 1000:1000 /home/runner
+
+WORKDIR /home/runner/
+
+COPY --from=0 --chown=1000:1000 /runner /bin/runner
+
+USER 1000
+
 ENTRYPOINT ["/bin/runner"]
