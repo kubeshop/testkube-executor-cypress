@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cypress-test
+spec:
+  containers:
+    - name: t
+      image: kubeshop/testkube-cypress-executor:dev-005
+      command: ["sleep"]
+      args: ["100000"]
