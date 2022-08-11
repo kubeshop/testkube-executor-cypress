@@ -26,6 +26,9 @@ RUN apt-get update && apt-get install -y libgtk2.0-0 \
  
 RUN npm install -g cypress browserslist@latest
 
+# node:17 is already adding userid=1000 for nodejs! 
+# so we can use it inside our docker container.
+ 
 RUN mkdir /home/runner
 RUN chown -R 1000:1000 /home/runner
 
