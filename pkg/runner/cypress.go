@@ -118,8 +118,17 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	for _, value := range execution.Variables {
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
 	}
+	
+	// set up reports directory
+	reportsPath := filepath.Join(path, "reports")
+	if _, err := os.Stat(reportsPath); os.IsNotExist(err) {
+		mkdirErr := os.Mkdir(reportsPath, os.ModePerm)
+		if mkdirErr != nil {
+			return result, mkdirErr
+		}
+	}
 
-	junitReportPath := filepath.Join(path, "results/junit.xml")
+	junitReportPath := filepath.Join(path, "reports/report.xml")
 	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath),
 		"--env", strings.Join(envVars, ",")}
 
@@ -136,6 +145,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		directories := []string{
 			filepath.Join(path, "cypress/videos"),
 			filepath.Join(path, "cypress/screenshots"),
+			junitReportPath,
 		}
 		err := r.Scraper.Scrape(execution.Id, directories)
 		if err != nil {
