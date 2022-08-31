@@ -14,6 +14,7 @@ import (
 	"github.com/kubeshop/testkube/pkg/executor/content"
 	"github.com/kubeshop/testkube/pkg/executor/output"
 	"github.com/kubeshop/testkube/pkg/executor/scraper"
+	"github.com/kubeshop/testkube/pkg/executor/secret"
 )
 
 type Params struct {
@@ -114,6 +115,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("cypress binary install error: %w\n\n%s", err, out)
 	}
 
+	secret.NewEnvManager().GetVars(execution.Variables)
 	envVars := make([]string, 0, len(execution.Variables))
 	for _, value := range execution.Variables {
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
