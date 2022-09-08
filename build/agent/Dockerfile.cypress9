@@ -12,7 +12,7 @@ RUN cd cmd/agent;go build -o /runner -mod mod -a .
 
 FROM cypress/included:9.7.0 
 
-# run as a root in order to be install to /root/cache and write to shared data volume
+# run as a root in order to install to /root/cache and write to shared data volume
  
 RUN mkdir /home/runner
 
