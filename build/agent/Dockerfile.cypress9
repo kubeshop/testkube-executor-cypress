@@ -12,8 +12,7 @@ RUN cd cmd/agent;go build -o /runner -mod mod -a .
 
 FROM cypress/included:9.7.0 
 
-# node:17 is already adding userid=1000 for nodejs! 
-# so we can use it inside our docker container.
+# run as a root in order to be install to /root/cache and write to shared data volume
  
 RUN mkdir /home/runner
 
