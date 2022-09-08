@@ -2,7 +2,7 @@
 target "docker-metadata-action" {}
 
 group "default" {
-    targets = ["custom", "cypress8","cypress9","cypress10"]
+    targets = ["custom", "cypress8", "cypress9", "cypress10"]
 }
 
 target "custom" {
