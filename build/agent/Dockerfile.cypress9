@@ -16,12 +16,9 @@ FROM cypress/included:9.7.0
 # so we can use it inside our docker container.
  
 RUN mkdir /home/runner
-RUN chown -R 1000:1000 /home/runner
 
 WORKDIR /home/runner/
 
-COPY --from=0 --chown=1000:1000 /runner /bin/runner
-
-USER 1000
+COPY --from=0 /runner /bin/runner
 
 ENTRYPOINT ["/bin/runner"]
