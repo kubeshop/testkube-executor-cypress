@@ -27,6 +27,7 @@ type Params struct {
 	ScrapperEnabled bool   // RUNNER_SCRAPPERENABLED
 	GitUsername     string // RUNNER_GITUSERNAME
 	GitToken        string // RUNNER_GITTOKEN
+	Datadir         string // RUNNER_DATADIR
 }
 
 func NewCypressRunner() (*CypressRunner, error) {
@@ -60,22 +61,15 @@ type CypressRunner struct {
 }
 
 func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
-
 	// make some validation
 	err = r.Validate(execution)
 	if err != nil {
 		return result, err
 	}
 
-	if r.Params.GitUsername != "" && r.Params.GitToken != "" {
-		if execution.Content != nil && execution.Content.Repository != nil {
-			execution.Content.Repository.Username = r.Params.GitUsername
-			execution.Content.Repository.Token = r.Params.GitToken
-		}
-	}
-
-	path, err := r.Fetcher.Fetch(execution.Content)
-	if err != nil {
+	// check that the datadir exists
+	_, err = os.Stat(r.Params.Datadir)
+	if errors.Is(err, os.ErrNotExist) {
 		return result, err
 	}
 
@@ -89,6 +83,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("passing cypress test as single file not implemented yet")
 	}
 
+	path := filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path)
 	if _, err := os.Stat(filepath.Join(path, "package.json")); err == nil {
 		// be gentle to different cypress versions, run from local npm deps
 		out, err := executor.Run(path, "npm", "install")
