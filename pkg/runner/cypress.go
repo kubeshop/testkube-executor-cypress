@@ -155,8 +155,8 @@ func (r *CypressRunner) Validate(execution testkube.Execution) error {
 		return fmt.Errorf("cypress executor handle only repository based tests, but repository is nil")
 	}
 
-	if execution.Content.Repository.Branch == "" {
-		return fmt.Errorf("can't find branch in params, repo:%+v", execution.Content.Repository)
+	if execution.Content.Repository.Branch == "" && execution.Content.Repository.Commit == "" {
+		return fmt.Errorf("can't find branch or commit in params, repo:%+v", execution.Content.Repository)
 	}
 
 	return nil
