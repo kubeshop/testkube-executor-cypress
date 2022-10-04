@@ -116,6 +116,13 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("cypress binary install error: %w\n\n%s", err, out)
 	}
 
+	// convert executor env variables to k6 env variables
+	for key, value := range execution.Envs {
+		if err = os.Setenv(key, value); err != nil {
+			return result, fmt.Errorf("setting env var: %w", err)
+		}
+	}
+
 	secret.NewEnvManager().GetVars(execution.Variables)
 	envVars := make([]string, 0, len(execution.Variables))
 	for _, value := range execution.Variables {
