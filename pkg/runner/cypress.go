@@ -92,17 +92,17 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	path := filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path)
 	if _, err := os.Stat(filepath.Join(path, "package.json")); err == nil {
 		// be gentle to different cypress versions, run from local npm deps
-		out, err := executor.Run(path, "npm", "install")
+		out, err := executor.Run(path, "npm", nil, "install")
 		if err != nil {
 			return result, fmt.Errorf("npm install error: %w\n\n%s", err, out)
 		}
 	} else if errors.Is(err, os.ErrNotExist) {
-		out, err := executor.Run(path, "npm", "init", "--yes")
+		out, err := executor.Run(path, "npm", nil, "init", "--yes")
 		if err != nil {
 			return result, fmt.Errorf("npm init error: %w\n\n%s", err, out)
 		}
 
-		out, err = executor.Run(path, "npm", "install", "cypress", "--save-dev")
+		out, err = executor.Run(path, "npm", nil, "install", "cypress", "--save-dev")
 		if err != nil {
 			return result, fmt.Errorf("npm install cypress error: %w\n\n%s", err, out)
 		}
@@ -111,12 +111,12 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	}
 
 	// handle project local Cypress version install (`Cypress` app)
-	out, err := executor.Run(path, "./node_modules/cypress/bin/cypress", "install")
+	out, err := executor.Run(path, "./node_modules/cypress/bin/cypress", nil, "install")
 	if err != nil {
 		return result, fmt.Errorf("cypress binary install error: %w\n\n%s", err, out)
 	}
-
-	secret.NewEnvManager().GetVars(execution.Variables)
+	envManager := secret.NewEnvManagerWithVars(execution.Variables)
+	envManager.GetVars(execution.Variables)
 	envVars := make([]string, 0, len(execution.Variables))
 	for _, value := range execution.Variables {
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
@@ -130,7 +130,8 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	args = append(args, execution.Args...)
 
 	// run cypress inside repo directory ignore execution error in case of failed test
-	out, err = executor.Run(path, "./node_modules/cypress/bin/cypress", args...)
+	out, err = executor.Run(path, "./node_modules/cypress/bin/cypress", envManager, args...)
+	out = envManager.Obfuscate(out)
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
 
