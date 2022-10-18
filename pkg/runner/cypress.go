@@ -83,12 +83,6 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("passing cypress test as single file not implemented yet")
 	}
 
-	// add configuration files
-	err = content.PlaceFiles(execution.CopyFiles)
-	if err != nil {
-		return result.Err(fmt.Errorf("could not place config files: %w", err)), nil
-	}
-
 	path := filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path)
 	if _, err := os.Stat(filepath.Join(path, "package.json")); err == nil {
 		// be gentle to different cypress versions, run from local npm deps
