@@ -89,20 +89,24 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result.Err(fmt.Errorf("could not place config files: %w", err)), nil
 	}
 
-	path := filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path)
-	if _, err := os.Stat(filepath.Join(path, "package.json")); err == nil {
+	runPath := filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path)
+	if execution.Content.Repository.WorkingDir != "" {
+		runPath = filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.WorkingDir)
+	}
+
+	if _, err := os.Stat(filepath.Join(runPath, "package.json")); err == nil {
 		// be gentle to different cypress versions, run from local npm deps
-		out, err := executor.Run(path, "npm", nil, "install")
+		out, err := executor.Run(runPath, "npm", nil, "install")
 		if err != nil {
 			return result, fmt.Errorf("npm install error: %w\n\n%s", err, out)
 		}
 	} else if errors.Is(err, os.ErrNotExist) {
-		out, err := executor.Run(path, "npm", nil, "init", "--yes")
+		out, err := executor.Run(runPath, "npm", nil, "init", "--yes")
 		if err != nil {
 			return result, fmt.Errorf("npm init error: %w\n\n%s", err, out)
 		}
 
-		out, err = executor.Run(path, "npm", nil, "install", "cypress", "--save-dev")
+		out, err = executor.Run(runPath, "npm", nil, "install", "cypress", "--save-dev")
 		if err != nil {
 			return result, fmt.Errorf("npm install cypress error: %w\n\n%s", err, out)
 		}
@@ -111,7 +115,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	}
 
 	// handle project local Cypress version install (`Cypress` app)
-	out, err := executor.Run(path, "./node_modules/cypress/bin/cypress", nil, "install")
+	out, err := executor.Run(runPath, "./node_modules/cypress/bin/cypress", nil, "install")
 	if err != nil {
 		return result, fmt.Errorf("cypress binary install error: %w\n\n%s", err, out)
 	}
@@ -130,15 +134,19 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
 	}
 
-	junitReportPath := filepath.Join(path, "results/junit.xml")
+	junitReportPath := filepath.Join(runPath, "results/junit.xml")
 	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath),
 		"--env", strings.Join(envVars, ",")}
+
+	if execution.Content.Repository.WorkingDir != "" {
+		args = append(args, "--project", filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path))
+	}
 
 	// append args from execution
 	args = append(args, execution.Args...)
 
 	// run cypress inside repo directory ignore execution error in case of failed test
-	out, err = executor.Run(path, "./node_modules/cypress/bin/cypress", envManager, args...)
+	out, err = executor.Run(runPath, "./node_modules/cypress/bin/cypress", envManager, args...)
 	out = envManager.Obfuscate(out)
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
@@ -146,8 +154,8 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	// scrape artifacts first even if there are errors above
 	if r.Params.ScrapperEnabled {
 		directories := []string{
-			filepath.Join(path, "cypress/videos"),
-			filepath.Join(path, "cypress/screenshots"),
+			filepath.Join(runPath, "cypress/videos"),
+			filepath.Join(runPath, "cypress/screenshots"),
 		}
 		err := r.Scraper.Scrape(execution.Id, directories)
 		if err != nil {
