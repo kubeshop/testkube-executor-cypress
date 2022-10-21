@@ -128,12 +128,13 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
 	}
 
-	junitReportPath := filepath.Join(runPath, "results/junit.xml")
+	projectPath := filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path)
+	junitReportPath := filepath.Join(projectPath, "results/junit.xml")
 	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath),
 		"--env", strings.Join(envVars, ",")}
 
 	if execution.Content.Repository.WorkingDir != "" {
-		args = append(args, "--project", filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path))
+		args = append(args, "--project", projectPath)
 	}
 
 	// append args from execution
@@ -148,8 +149,8 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	// scrape artifacts first even if there are errors above
 	if r.Params.ScrapperEnabled {
 		directories := []string{
-			filepath.Join(runPath, "cypress/videos"),
-			filepath.Join(runPath, "cypress/screenshots"),
+			filepath.Join(projectPath, "cypress/videos"),
+			filepath.Join(projectPath, "cypress/screenshots"),
 		}
 		err := r.Scraper.Scrape(execution.Id, directories)
 		if err != nil {
