@@ -20,4 +20,4 @@ WORKDIR /home/runner/
 
 COPY --from=0 /runner /bin/runner
 
-ENTRYPOINT ["/bin/runner"]
+ENTRYPOINT ["/bin/runner", "-dependency", "npm"]

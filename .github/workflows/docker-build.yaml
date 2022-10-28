@@ -24,7 +24,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Defaults to custom
+      # Defaults to npm
       - name: Docker meta for Cypress executor
         id: meta_cypress_executor_default
         uses: docker/metadata-action@v3
@@ -46,13 +46,13 @@ jobs:
           files: |
             build/agent/docker-bake.hcl
             ${{ steps.meta_cypress_executor_default.outputs.bake-file }}
-          targets: custom
+          targets: npm
           push: true
 
   allcypresses:
     strategy:
       matrix:
-        version: [custom, cypress8, cypress9, cypress10]
+        version: [npm, yarn, cypress8, cypress9, cypress10]
 
     runs-on: ubuntu-latest
     steps:

@@ -37,7 +37,7 @@ jobs:
           files: |
             build/agent/docker-bake.hcl
             ${{ steps.meta_cypress_executor.outputs.bake-file }}
-          targets: custom
+          targets: npm
           push: true
 
       - name: Output commit sha
