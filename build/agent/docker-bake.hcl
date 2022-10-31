@@ -11,6 +11,7 @@ target "custom" {
   dockerfile = "build/agent/Dockerfile.custom"
   platforms = [
     "linux/amd64",
+    "linux/arm64"
   ]
 }
 
@@ -20,6 +21,7 @@ target "cypress8" {
   dockerfile = "build/agent/Dockerfile.cypress8"
   platforms = [
     "linux/amd64",
+    "linux/arm64"
   ]
 }
 
@@ -29,6 +31,7 @@ target "cypress9" {
   dockerfile = "build/agent/Dockerfile.cypress9"
   platforms = [
     "linux/amd64",
+    "linux/arm64"
   ]
 }
 
@@ -38,5 +41,6 @@ target "cypress10" {
   dockerfile = "build/agent/Dockerfile.cypress10"
   platforms = [
     "linux/amd64",
+    "linux/arm64"
   ]
 }
