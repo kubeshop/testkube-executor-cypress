@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	r, err := runner.NewCypressRunner()
+	r, err := runner.NewCypressRunner(os.Getenv("DEPENDENCY_MANAGER"))
 	if err != nil {
 		output.PrintError(os.Stderr, fmt.Errorf("could not initialize runner: %w", err))
 		os.Exit(1)

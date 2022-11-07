@@ -30,7 +30,7 @@ type Params struct {
 	Datadir         string // RUNNER_DATADIR
 }
 
-func NewCypressRunner() (*CypressRunner, error) {
+func NewCypressRunner(dependency string) (*CypressRunner, error) {
 	var params Params
 	err := envconfig.Process("runner", &params)
 	if err != nil {
@@ -47,7 +47,8 @@ func NewCypressRunner() (*CypressRunner, error) {
 			params.Token,
 			params.Ssl,
 		),
-		Params: params,
+		Params:     params,
+		dependency: dependency,
 	}
 
 	return runner, nil
@@ -55,9 +56,10 @@ func NewCypressRunner() (*CypressRunner, error) {
 
 // CypressRunner - implements runner interface used in worker to start test execution
 type CypressRunner struct {
-	Params  Params
-	Fetcher content.ContentFetcher
-	Scraper scraper.Scraper
+	Params     Params
+	Fetcher    content.ContentFetcher
+	Scraper    scraper.Scraper
+	dependency string
 }
 
 func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
@@ -90,19 +92,42 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 
 	if _, err := os.Stat(filepath.Join(runPath, "package.json")); err == nil {
 		// be gentle to different cypress versions, run from local npm deps
-		out, err := executor.Run(runPath, "npm", nil, "install")
-		if err != nil {
-			return result, fmt.Errorf("npm install error: %w\n\n%s", err, out)
-		}
-	} else if errors.Is(err, os.ErrNotExist) {
-		out, err := executor.Run(runPath, "npm", nil, "init", "--yes")
-		if err != nil {
-			return result, fmt.Errorf("npm init error: %w\n\n%s", err, out)
+		if r.dependency == "npm" {
+			out, err := executor.Run(runPath, "npm", nil, "install")
+			if err != nil {
+				return result, fmt.Errorf("npm install error: %w\n\n%s", err, out)
+			}
 		}
 
-		out, err = executor.Run(runPath, "npm", nil, "install", "cypress", "--save-dev")
-		if err != nil {
-			return result, fmt.Errorf("npm install cypress error: %w\n\n%s", err, out)
+		if r.dependency == "yarn" {
+			out, err := executor.Run(runPath, "yarn", nil, "install")
+			if err != nil {
+				return result, fmt.Errorf("yarn install error: %w\n\n%s", err, out)
+			}
+		}
+	} else if errors.Is(err, os.ErrNotExist) {
+		if r.dependency == "npm" {
+			out, err := executor.Run(runPath, "npm", nil, "init", "--yes")
+			if err != nil {
+				return result, fmt.Errorf("npm init error: %w\n\n%s", err, out)
+			}
+
+			out, err = executor.Run(runPath, "npm", nil, "install", "cypress", "--save-dev")
+			if err != nil {
+				return result, fmt.Errorf("npm install cypress error: %w\n\n%s", err, out)
+			}
+		}
+
+		if r.dependency == "yarn" {
+			out, err := executor.Run(runPath, "yarn", nil, "init", "--yes")
+			if err != nil {
+				return result, fmt.Errorf("yarn init error: %w\n\n%s", err, out)
+			}
+
+			out, err = executor.Run(runPath, "yarn", nil, "add", "cypress", "--dev")
+			if err != nil {
+				return result, fmt.Errorf("yarn add cypress error: %w\n\n%s", err, out)
+			}
 		}
 	} else {
 		return result, fmt.Errorf("checking package.json file: %w", err)

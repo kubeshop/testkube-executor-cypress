@@ -2,13 +2,22 @@
 target "docker-metadata-action" {}
 
 group "default" {
-    targets = ["custom", "cypress8", "cypress9", "cypress10"]
+    targets = ["npm", "yarn", "cypress8", "cypress9", "cypress10"]
 }
 
-target "custom" {
+target "npm" {
   inherits = ["docker-metadata-action"]
   context = "./"
-  dockerfile = "build/agent/Dockerfile.custom"
+  dockerfile = "build/agent/Dockerfile.npm"
+  platforms = [
+    "linux/amd64",
+  ]
+}
+
+target "yarn" {
+  inherits = ["docker-metadata-action"]
+  context = "./"
+  dockerfile = "build/agent/Dockerfile.yarn"
   platforms = [
     "linux/amd64",
     "linux/arm64"

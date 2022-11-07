@@ -22,7 +22,7 @@ func TestRun(t *testing.T) {
 	os.Mkdir(repoDir, 0755)
 	_ = cp.Copy("../../examples", repoDir)
 
-	runner, err := NewCypressRunner()
+	runner, err := NewCypressRunner("npm")
 	if err != nil {
 		t.Fail()
 	}
@@ -53,7 +53,7 @@ func TestRunErrors(t *testing.T) {
 		os.Setenv("RUNNER_DATADIR", "/unknown")
 
 		// given
-		runner, err := NewCypressRunner()
+		runner, err := NewCypressRunner("yarn")
 		if err != nil {
 			t.Fail()
 		}
