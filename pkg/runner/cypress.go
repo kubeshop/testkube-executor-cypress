@@ -100,9 +100,9 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		}
 
 		if r.dependency == "yarn" {
-			out, err := executor.Run(runPath, "yarn", nil, "add")
+			out, err := executor.Run(runPath, "yarn", nil, "install")
 			if err != nil {
-				return result, fmt.Errorf("yarn add error: %w\n\n%s", err, out)
+				return result, fmt.Errorf("yarn install error: %w\n\n%s", err, out)
 			}
 		}
 	} else if errors.Is(err, os.ErrNotExist) {

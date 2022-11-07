@@ -34,4 +34,6 @@ WORKDIR /home/runner/
 
 COPY --from=0 /runner /bin/runner
 
-ENTRYPOINT ["/bin/runner", "-dependency", "npm"]
+ENV DEPENDENCY_MANAGER=npm
+
+ENTRYPOINT ["/bin/runner"]

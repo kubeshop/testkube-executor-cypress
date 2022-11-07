@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -10,14 +9,8 @@ import (
 	"github.com/kubeshop/testkube/pkg/executor/output"
 )
 
-var (
-	dependecy = flag.String("dependency", "npm", "package manager")
-)
-
 func main() {
-	flag.Parse()
-
-	r, err := runner.NewCypressRunner(*dependecy)
+	r, err := runner.NewCypressRunner(os.Getenv("DEPENDENCY_MANAGER"))
 	if err != nil {
 		output.PrintError(os.Stderr, fmt.Errorf("could not initialize runner: %w", err))
 		os.Exit(1)
