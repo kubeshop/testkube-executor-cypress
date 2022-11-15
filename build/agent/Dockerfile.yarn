@@ -10,7 +10,7 @@ RUN cd cmd/agent;go build -o /runner -mod mod -a .
 # using debian based image as alpine is not supported by Cypress yet
 # https://github.com/cypress-io/cypress/issues/419 
 
-FROM node:17
+FROM node:18
 RUN apt-get update && apt-get install -y libgtk2.0-0 \
     libgtk-3-0 \
     libgbm-dev \
