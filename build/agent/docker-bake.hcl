@@ -11,6 +11,7 @@ target "npm" {
   dockerfile = "build/agent/Dockerfile.npm"
   platforms = [
     "linux/amd64",
+    "linux/arm64"
   ]
 }
 
