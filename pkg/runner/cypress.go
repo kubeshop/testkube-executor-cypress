@@ -90,6 +90,13 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		runPath = filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.WorkingDir)
 	}
 
+	// convert executor env variables to os env variables
+	for key, value := range execution.Envs {
+		if err = os.Setenv(key, value); err != nil {
+			return result, fmt.Errorf("setting env var: %w", err)
+		}
+	}
+
 	if _, err := os.Stat(filepath.Join(runPath, "package.json")); err == nil {
 		// be gentle to different cypress versions, run from local npm deps
 		if r.dependency == "npm" {
@@ -137,13 +144,6 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	out, err := executor.Run(runPath, "./node_modules/cypress/bin/cypress", nil, "install")
 	if err != nil {
 		return result, fmt.Errorf("cypress binary install error: %w\n\n%s", err, out)
-	}
-
-	// convert executor env variables to os env variables
-	for key, value := range execution.Envs {
-		if err = os.Setenv(key, value); err != nil {
-			return result, fmt.Errorf("setting env var: %w", err)
-		}
 	}
 
 	envManager := secret.NewEnvManagerWithVars(execution.Variables)
