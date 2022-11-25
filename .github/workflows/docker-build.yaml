@@ -37,7 +37,6 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha
           flavor: |
-#            latest=auto
             prefix=
 
       - name: Build Defualt Cypress Runner
@@ -126,7 +125,6 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha
           flavor: |
-#            latest=auto
             prefix=
             suffix=-${{ matrix.version }}
 
