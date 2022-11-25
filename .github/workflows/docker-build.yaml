@@ -6,7 +6,7 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+-*"
 
 jobs:
-  default:
+  legacy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,8 +38,9 @@ jobs:
             type=sha
           flavor: |
             prefix=
+            suffix=-legacy
 
-      - name: Build Defualt Cypress Runner
+      - name: Build Default Cypress Runner
         uses: docker/bake-action@v1
         with:
           files: |
@@ -94,7 +95,7 @@ jobs:
   allcypresses:
     strategy:
       matrix:
-        version: [npm, yarn, cypress8, cypress9, cypress10]
+        version: [yarn, cypress8, cypress9, cypress10]
 
     runs-on: ubuntu-latest
     steps:
