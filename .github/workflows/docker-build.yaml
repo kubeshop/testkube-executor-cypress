@@ -24,7 +24,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Defaults to npm
       - name: Docker meta for Cypress executor
         id: meta_cypress_executor_default
         uses: docker/metadata-action@v3
@@ -48,7 +47,7 @@ jobs:
             ${{ steps.meta_cypress_executor_default.outputs.bake-file }}
           targets: npm
           push: true
-
+#Builds as a default image
   cypress11:
     runs-on: ubuntu-latest
     steps:
@@ -81,7 +80,6 @@ jobs:
           flavor: |
             latest=auto
             prefix=
-            suffix=-cypress11
 
       - name: Build Cypress executor version 11
         uses: docker/bake-action@v1
