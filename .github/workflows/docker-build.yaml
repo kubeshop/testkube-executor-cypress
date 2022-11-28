@@ -39,7 +39,7 @@ jobs:
             prefix=
             suffix=-legacy
 
-      - name: Build Default Cypress Runner
+      - name: Build Cypress Runner
         uses: docker/bake-action@v1
         with:
           files: |
@@ -81,7 +81,7 @@ jobs:
             latest=auto
             prefix=
 
-      - name: Build Cypress executor version 11
+      - name: Build Default Cypress executor version 11
         uses: docker/bake-action@v1
         with:
           files: |
