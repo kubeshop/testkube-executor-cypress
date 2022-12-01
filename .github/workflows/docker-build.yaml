@@ -6,7 +6,7 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+-*"
 
 jobs:
-  default:
+  legacy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,9 +24,50 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Defaults to npm
       - name: Docker meta for Cypress executor
         id: meta_cypress_executor_default
+        uses: docker/metadata-action@v3
+        with:
+          images: kubeshop/testkube-cypress-executor
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+          flavor: |
+            prefix=
+            suffix=-legacy
+
+      - name: Build Cypress Runner
+        uses: docker/bake-action@v1
+        with:
+          files: |
+            build/agent/docker-bake.hcl
+            ${{ steps.meta_cypress_executor_default.outputs.bake-file }}
+          targets: npm
+          push: true
+#Builds as a default image
+  cypress11:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker meta for Cypress executor version 11
+        id: meta_cypress_executor
         uses: docker/metadata-action@v3
         with:
           images: kubeshop/testkube-cypress-executor
@@ -40,19 +81,19 @@ jobs:
             latest=auto
             prefix=
 
-      - name: Build Defualt Cypress Runner
+      - name: Build Default Cypress executor version 11
         uses: docker/bake-action@v1
         with:
           files: |
             build/agent/docker-bake.hcl
-            ${{ steps.meta_cypress_executor_default.outputs.bake-file }}
-          targets: npm
+            ${{ steps.meta_cypress_executor.outputs.bake-file }}
+          targets: cypress11
           push: true
 
   allcypresses:
     strategy:
       matrix:
-        version: [npm, yarn, cypress8, cypress9, cypress10]
+        version: [yarn, cypress8, cypress9, cypress10]
 
     runs-on: ubuntu-latest
     steps:
@@ -83,7 +124,6 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha
           flavor: |
-            latest=auto
             prefix=
             suffix=-${{ matrix.version }}
 

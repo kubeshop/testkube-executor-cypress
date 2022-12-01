@@ -2,7 +2,7 @@
 target "docker-metadata-action" {}
 
 group "default" {
-    targets = ["npm", "yarn", "cypress8", "cypress9", "cypress10"]
+    targets = ["yarn", "cypress8", "cypress9", "cypress10", "cypress11"]
 }
 
 target "npm" {
@@ -49,6 +49,16 @@ target "cypress10" {
   inherits = ["docker-metadata-action"]
   context = "./"
   dockerfile = "build/agent/Dockerfile.cypress10"
+  platforms = [
+    "linux/amd64",
+    "linux/arm64"
+  ]
+}
+
+target "cypress11" {
+  inherits = ["docker-metadata-action"]
+  context = "./"
+  dockerfile = "build/agent/Dockerfile.cypress11"
   platforms = [
     "linux/amd64",
     "linux/arm64"
