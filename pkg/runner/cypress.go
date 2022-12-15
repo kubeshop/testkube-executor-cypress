@@ -13,6 +13,7 @@ import (
 	"github.com/kubeshop/testkube/pkg/executor"
 	"github.com/kubeshop/testkube/pkg/executor/content"
 	"github.com/kubeshop/testkube/pkg/executor/output"
+	"github.com/kubeshop/testkube/pkg/executor/runner"
 	"github.com/kubeshop/testkube/pkg/executor/scraper"
 	"github.com/kubeshop/testkube/pkg/executor/secret"
 )
@@ -237,4 +238,9 @@ func MapStatus(in junit.Status) (out string) {
 	default:
 		return string(testkube.FAILED_ExecutionStatus)
 	}
+}
+
+// GetType returns runner type
+func (r *CypressRunner) GetType() runner.Type {
+	return runner.TypeMain
 }
