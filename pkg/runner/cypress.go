@@ -148,9 +148,9 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	}
 
 	envManager := secret.NewEnvManagerWithVars(execution.Variables)
-	envManager.GetVars(execution.Variables)
-	envVars := make([]string, 0, len(execution.Variables))
-	for _, value := range execution.Variables {
+	envManager.GetVars(envManager.Variables)
+	envVars := make([]string, 0, len(envManager.Variables))
+	for _, value := range envManager.Variables {
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
 	}
 
