@@ -6,8 +6,7 @@ go 1.18
 
 require (
 	github.com/joshdk/go-junit v1.0.0
-	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/kubeshop/testkube v1.8.17-0.20230110143037-d9256136a9fe
+	github.com/kubeshop/testkube v1.8.21
 	github.com/otiai10/copy v1.7.0
 	github.com/stretchr/testify v1.8.1
 )
@@ -33,6 +32,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/klauspost/compress v1.15.14 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
