@@ -8,34 +8,22 @@ import (
 	"strings"
 
 	junit "github.com/joshdk/go-junit"
-	"github.com/kelseyhightower/envconfig"
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
+	"github.com/kubeshop/testkube/pkg/envs"
 	"github.com/kubeshop/testkube/pkg/executor"
 	"github.com/kubeshop/testkube/pkg/executor/content"
 	"github.com/kubeshop/testkube/pkg/executor/output"
 	"github.com/kubeshop/testkube/pkg/executor/runner"
 	"github.com/kubeshop/testkube/pkg/executor/scraper"
 	"github.com/kubeshop/testkube/pkg/executor/secret"
+	"github.com/kubeshop/testkube/pkg/ui"
 )
 
-type Params struct {
-	Endpoint        string // RUNNER_ENDPOINT
-	AccessKeyID     string // RUNNER_ACCESSKEYID
-	SecretAccessKey string // RUNNER_SECRETACCESSKEY
-	Location        string // RUNNER_LOCATION
-	Token           string // RUNNER_TOKEN
-	Ssl             bool   // RUNNER_SSL
-	ScrapperEnabled bool   // RUNNER_SCRAPPERENABLED
-	GitUsername     string // RUNNER_GITUSERNAME
-	GitToken        string // RUNNER_GITTOKEN
-	Datadir         string // RUNNER_DATADIR
-}
-
 func NewCypressRunner(dependency string) (*CypressRunner, error) {
-	var params Params
-	err := envconfig.Process("runner", &params)
+	output.PrintLog(fmt.Sprintf("%s Preparing test runner", ui.IconTruck))
+	params, err := envs.LoadTestkubeVariables()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not initialize Artillery runner variables: %w", err)
 	}
 
 	runner := &CypressRunner{
@@ -57,39 +45,43 @@ func NewCypressRunner(dependency string) (*CypressRunner, error) {
 
 // CypressRunner - implements runner interface used in worker to start test execution
 type CypressRunner struct {
-	Params     Params
+	Params     envs.Params
 	Fetcher    content.ContentFetcher
 	Scraper    scraper.Scraper
 	dependency string
 }
 
 func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.ExecutionResult, err error) {
+	output.PrintLog(fmt.Sprintf("%s Preparing for test run", ui.IconTruck))
 	// make some validation
 	err = r.Validate(execution)
 	if err != nil {
 		return result, err
 	}
 
+	output.PrintLog(fmt.Sprintf("%s Checking test content from %s...", ui.IconBox, execution.Content.Type_))
 	// check that the datadir exists
-	_, err = os.Stat(r.Params.Datadir)
+	_, err = os.Stat(r.Params.DataDir)
 	if errors.Is(err, os.ErrNotExist) {
 		return result, err
 	}
 
 	if execution.Content.IsFile() {
-		output.PrintEvent("using file", execution)
+		output.PrintLog(fmt.Sprintf("%s Using file...", ui.IconTruck))
 
 		// TODO add cypress project structure
 		// TODO checkout this repo with `skeleton` path
 		// TODO overwrite skeleton/cypress/integration/test.js
 		//      file with execution content git file
+		output.PrintLog(fmt.Sprintf("%s Passing Cypress test as single file not implemented yet", ui.IconCross))
 		return result, fmt.Errorf("passing cypress test as single file not implemented yet")
 	}
 
-	runPath := filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path)
+	runPath := filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.Path)
 	if execution.Content.Repository.WorkingDir != "" {
-		runPath = filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.WorkingDir)
+		runPath = filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.WorkingDir)
 	}
+	output.PrintLog(fmt.Sprintf("%s Test content checked", ui.IconCheckMark))
 
 	// convert executor env variables to os env variables
 	for key, value := range execution.Envs {
@@ -138,6 +130,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 			}
 		}
 	} else {
+		output.PrintLog(fmt.Sprintf("%s failed checking package.json file: %s", ui.IconCross, err.Error()))
 		return result, fmt.Errorf("checking package.json file: %w", err)
 	}
 
@@ -151,10 +144,13 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	envManager.GetVars(envManager.Variables)
 	envVars := make([]string, 0, len(envManager.Variables))
 	for _, value := range envManager.Variables {
+		if value.IsSecret() {
+			output.PrintLog(fmt.Sprintf("%s=%s", value.Name, value.Value))
+		}
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
 	}
 
-	projectPath := filepath.Join(r.Params.Datadir, "repo", execution.Content.Repository.Path)
+	projectPath := filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.Path)
 	junitReportPath := filepath.Join(projectPath, "results/junit.xml")
 	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath),
 		"--env", strings.Join(envVars, ",")}
@@ -171,6 +167,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	out = envManager.Obfuscate(out)
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
+	output.PrintLog(fmt.Sprintf("%s Mapped Junit to Execution Results...", ui.IconCheckMark))
 
 	// scrape artifacts first even if there are errors above
 	if r.Params.ScrapperEnabled {
@@ -192,14 +189,17 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 func (r *CypressRunner) Validate(execution testkube.Execution) error {
 
 	if execution.Content == nil {
+		output.PrintLog(fmt.Sprintf("%s Invalid input: can't find any content to run in execution data", ui.IconCross))
 		return fmt.Errorf("can't find any content to run in execution data: %+v", execution)
 	}
 
 	if execution.Content.Repository == nil {
-		return fmt.Errorf("cypress executor handle only repository based tests, but repository is nil")
+		output.PrintLog(fmt.Sprintf("%s Cypress executor handles only repository based tests, but repository is nil", ui.IconCross))
+		return fmt.Errorf("cypress executor handles only repository based tests, but repository is nil")
 	}
 
 	if execution.Content.Repository.Branch == "" && execution.Content.Repository.Commit == "" {
+		output.PrintLog(fmt.Sprintf("%s can't find branch or commit in params, repo:%+v", ui.IconCross, execution.Content.Repository))
 		return fmt.Errorf("can't find branch or commit in params, repo:%+v", execution.Content.Repository)
 	}
 
