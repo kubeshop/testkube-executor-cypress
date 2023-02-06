@@ -6,7 +6,7 @@ go 1.18
 
 require (
 	github.com/joshdk/go-junit v1.0.0
-	github.com/kubeshop/testkube v1.8.24
+	github.com/kubeshop/testkube v1.9.3
 	github.com/otiai10/copy v1.7.0
 	github.com/stretchr/testify v1.8.1
 )
@@ -14,7 +14,7 @@ require (
 require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -33,14 +33,14 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
-	github.com/klauspost/compress v1.15.14 // indirect
+	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
-	github.com/kubeshop/testkube-operator v1.8.5 // indirect
+	github.com/kubeshop/testkube-operator v1.9.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.46 // indirect
+	github.com/minio/minio-go/v7 v7.0.47 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
