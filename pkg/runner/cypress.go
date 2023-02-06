@@ -34,6 +34,7 @@ func NewCypressRunner(dependency string) (*CypressRunner, error) {
 			params.SecretAccessKey,
 			params.Location,
 			params.Token,
+			params.Bucket,
 			params.Ssl,
 		),
 		Params:     params,
@@ -177,11 +178,11 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		}
 		err := r.Scraper.Scrape(execution.Id, directories)
 		if err != nil {
-			return result.WithErrors(fmt.Errorf("scrape artifacts error: %w", err)), nil
+			return *result.WithErrors(fmt.Errorf("scrape artifacts error: %w", err)), nil
 		}
 	}
 
-	return result.WithErrors(err, serr), nil
+	return *result.WithErrors(err, serr), nil
 }
 
 // Validate checks if Execution has valid data in context of Cypress executor
