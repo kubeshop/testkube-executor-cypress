@@ -84,13 +84,6 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	}
 	output.PrintLog(fmt.Sprintf("%s Test content checked", ui.IconCheckMark))
 
-	// convert executor env variables to os env variables
-	for key, value := range execution.Envs {
-		if err = os.Setenv(key, value); err != nil {
-			return result, fmt.Errorf("setting env var: %w", err)
-		}
-	}
-
 	if _, err := os.Stat(filepath.Join(runPath, "package.json")); err == nil {
 		// be gentle to different cypress versions, run from local npm deps
 		if r.dependency == "npm" {
@@ -145,7 +138,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 	envManager.GetVars(envManager.Variables)
 	envVars := make([]string, 0, len(envManager.Variables))
 	for _, value := range envManager.Variables {
-		if value.IsSecret() {
+		if !value.IsSecret() {
 			output.PrintLog(fmt.Sprintf("%s=%s", value.Name, value.Value))
 		}
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
