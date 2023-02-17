@@ -12,10 +12,10 @@ import (
 	"github.com/kubeshop/testkube/pkg/envs"
 	"github.com/kubeshop/testkube/pkg/executor"
 	"github.com/kubeshop/testkube/pkg/executor/content"
+	"github.com/kubeshop/testkube/pkg/executor/env"
 	"github.com/kubeshop/testkube/pkg/executor/output"
 	"github.com/kubeshop/testkube/pkg/executor/runner"
 	"github.com/kubeshop/testkube/pkg/executor/scraper"
-	"github.com/kubeshop/testkube/pkg/executor/secret"
 	"github.com/kubeshop/testkube/pkg/ui"
 )
 
@@ -134,8 +134,8 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("cypress binary install error: %w\n\n%s", err, out)
 	}
 
-	envManager := secret.NewEnvManagerWithVars(execution.Variables)
-	envManager.GetVars(envManager.Variables)
+	envManager := env.NewManagerWithVars(execution.Variables)
+	envManager.GetReferenceVars(envManager.Variables)
 	envVars := make([]string, 0, len(envManager.Variables))
 	for _, value := range envManager.Variables {
 		if !value.IsSecret() {
@@ -158,7 +158,7 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 
 	// run cypress inside repo directory ignore execution error in case of failed test
 	out, err = executor.Run(runPath, "./node_modules/cypress/bin/cypress", envManager, args...)
-	out = envManager.Obfuscate(out)
+	out = envManager.ObfuscateSecrets(out)
 	suites, serr := junit.IngestFile(junitReportPath)
 	result = MapJunitToExecutionResults(out, suites)
 	output.PrintLog(fmt.Sprintf("%s Mapped Junit to Execution Results...", ui.IconCheckMark))
