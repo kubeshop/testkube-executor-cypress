@@ -67,7 +67,12 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, err
 	}
 
-	if execution.Content.IsFile() {
+	contentType, err := r.Fetcher.CalculateGitContentType(*execution.Content.Repository)
+	if err != nil {
+		return result, err
+	}
+
+	if contentType != string(testkube.TestContentTypeGitDir) {
 		output.PrintLog(fmt.Sprintf("%s Using file...", ui.IconTruck))
 
 		// TODO add cypress project structure
