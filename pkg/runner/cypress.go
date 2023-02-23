@@ -67,12 +67,18 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, err
 	}
 
-	contentType, err := r.Fetcher.CalculateGitContentType(*execution.Content.Repository)
+	runPath := filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.Path)
+	projectPath := runPath
+	if execution.Content.Repository.WorkingDir != "" {
+		runPath = filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.WorkingDir)
+	}
+
+	fileInfo, err := os.Stat(projectPath)
 	if err != nil {
 		return result, err
 	}
 
-	if contentType != string(testkube.TestContentTypeGitDir) {
+	if !fileInfo.IsDir() {
 		output.PrintLog(fmt.Sprintf("%s Using file...", ui.IconTruck))
 
 		// TODO add cypress project structure
@@ -83,10 +89,6 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		return result, fmt.Errorf("passing cypress test as single file not implemented yet")
 	}
 
-	runPath := filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.Path)
-	if execution.Content.Repository.WorkingDir != "" {
-		runPath = filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.WorkingDir)
-	}
 	output.PrintLog(fmt.Sprintf("%s Test content checked", ui.IconCheckMark))
 
 	if _, err := os.Stat(filepath.Join(runPath, "package.json")); err == nil {
@@ -149,7 +151,6 @@ func (r *CypressRunner) Run(execution testkube.Execution) (result testkube.Execu
 		envVars = append(envVars, fmt.Sprintf("%s=%s", value.Name, value.Value))
 	}
 
-	projectPath := filepath.Join(r.Params.DataDir, "repo", execution.Content.Repository.Path)
 	junitReportPath := filepath.Join(projectPath, "results/junit.xml")
 	args := []string{"run", "--reporter", "junit", "--reporter-options", fmt.Sprintf("mochaFile=%s,toConsole=false", junitReportPath),
 		"--env", strings.Join(envVars, ",")}
