@@ -27,7 +27,7 @@ func NewCypressRunner(dependency string) (*CypressRunner, error) {
 	}
 
 	runner := &CypressRunner{
-		Fetcher: content.NewFetcher(""),
+		Fetcher: content.NewFetcher(params.DataDir),
 		Scraper: scraper.NewMinioScraper(
 			params.Endpoint,
 			params.AccessKeyID,
