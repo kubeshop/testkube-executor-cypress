@@ -31,7 +31,7 @@ func NewCypressRunner(dependency string) (*CypressRunner, error) {
 	output.PrintLog(fmt.Sprintf("%s Preparing test runner", ui.IconTruck))
 	params, err := envs.LoadTestkubeVariables()
 	if err != nil {
-		return nil, errors.Errorf("could not initialize Artillery runner variables: %v", err)
+		return nil, errors.Errorf("could not initialize Cypress runner variables: %v", err)
 	}
 
 	r := &CypressRunner{
