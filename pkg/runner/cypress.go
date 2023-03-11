@@ -219,12 +219,12 @@ func (r *CypressRunner) scrape(ctx context.Context, projectPath string, executio
 	var loader scraper.Uploader
 	var meta map[string]any
 	if r.Params.CloudMode {
-		output.PrintLog(fmt.Sprintf("%s Upload artifacts using Cloud uploader", ui.IconCheckMark))
+		output.PrintLog(fmt.Sprintf("%s Uploading artifacts using Cloud uploader", ui.IconCheckMark))
 		meta = cloudscraper.ExtractCloudLoaderMeta(execution)
 		cloudExecutor := cloudexecutor.NewCloudGRPCExecutor(r.CloudClient, r.Params.CloudAPIKey)
 		loader = cloudscraper.NewCloudUploader(cloudExecutor)
 	} else {
-		output.PrintLog(fmt.Sprintf("%s Upload artifacts using MinIO uploader", ui.IconCheckMark))
+		output.PrintLog(fmt.Sprintf("%s Uploading artifacts using MinIO uploader", ui.IconCheckMark))
 		meta = scraper.ExtractMinIOLoaderMeta(execution)
 		loader, err = scraper.NewMinIOLoader(
 			r.Params.Endpoint,
